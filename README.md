@@ -14,7 +14,7 @@ This is the repository for BioRAG. BioRAG can identify gene signature enrichment
 
 Install BioRAG via PyPI with the following command:
 
-    ```{python}
+    ```bash
     pip install biorag
     ```
 
@@ -36,13 +36,41 @@ To load BioRAG, follow these steps:
 
 1. Download the following files.
 2. Initialize the BioRAG object in the following way:
-3. Run biorag with a gene set query and textual query:
+    
+    ```python
+    from biorag import query_db
 
-    ```bash
-    biorag
+    new_query_db = query_db(SEMANTIC_PATH, TRANSCRIPTOME_PATH, COUNT_H5_PATH)
+
+    text_query = "This text query usually describes the experiment"
+
+    geneset_query = ["IFNG", "IRF1", "IFR2"]
+
+    new_query_db(geneset = geneset_query, text_query = text_query)
+
     ```
 
-The gene set is a list, and the textual query is a string python object.
+3. Run biorag with a gene set query and textual query. The gene set is a list, and the textual query is a string.
+
+    ```python
+
+    text_query = "This text query usually describes the experiment"
+
+    geneset_query = ["IFNG", "IRF1", "IFR2"]
+
+    result = new_query_db(geneset = geneset_query, text_query = text_query)
+
+    ```
+
+4. Modify the databases used using search in the following way.
+
+    ```python
+
+    
+    result = new_query_db(geneset = geneset_query, text_query = text_query, search = "semantic", expand = "transcriptome")
+
+    ```
+5. The results from BioRAG are in the form of a a pandas dataframe.
 
 ## License
 
