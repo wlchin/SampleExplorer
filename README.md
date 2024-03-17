@@ -2,6 +2,8 @@
 
 This is the repository for BioRAG. BioRAG can identify gene signature enrichment under relevant transcriptomic conditions within the ARCHS4 database, using a researcher-supplied gene set or text-based experimental description. 
 
+![Image Description](assets/BioRAG.png)
+
 ## Table of Contents
 
 - [Installation](#installation)
@@ -12,7 +14,7 @@ This is the repository for BioRAG. BioRAG can identify gene signature enrichment
 
 Install BioRAG via PyPI with the following command:
 
-    ```python
+    ```{python}
     pip install biorag
     ```
 
@@ -22,9 +24,9 @@ These additional files will need to be downloaded. Below is a table containing a
 
 | File Name | Description | Link |
 |-----------|-------------|------|
-| semantic_db    | Description 1 | [Link 1](https://example.com/file1) |
-| transcriptomic_db   | Description 2 | [Link 2](https://example.com/file2) |
-| ARCHS4 count data    | Description 3 | [Link 3](https://example.com/file3) |
+| semantic_db.h5ad   | semantic vector store | [Link 1](https://example.com/file1) |
+| transcriptomic_db.h5ad   | transcriptomic vector store | [Link 2](https://example.com/file2) |
+| human_v2.h5    | ARCHS4 count data | [Link 3](https://example.com/file3) |
 
 ## Usage
 
