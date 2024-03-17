@@ -1,4 +1,4 @@
-# Project Title
+# BioRAG
 
 This is the repository for BioRAG. BioRAG can identify gene signature enrichment under relevant transcriptomic conditions within the ARCHS4 database, using a researcher-supplied gene set or text-based experimental description. 
 
@@ -10,7 +10,11 @@ This is the repository for BioRAG. BioRAG can identify gene signature enrichment
 
 ## Installation
 
-Instructions on how to install and set up the project.
+Install BioRAG via PyPI with the following command:
+
+    ```python
+    pip install biorag
+    ```
 
 ### Additional files
 
@@ -18,9 +22,9 @@ These additional files will need to be downloaded. Below is a table containing a
 
 | File Name | Description | Link |
 |-----------|-------------|------|
-| File 1    | Description 1 | [Link 1](https://example.com/file1) |
-| File 2    | Description 2 | [Link 2](https://example.com/file2) |
-| File 3    | Description 3 | [Link 3](https://example.com/file3) |
+| semantic_db    | Description 1 | [Link 1](https://example.com/file1) |
+| transcriptomic_db   | Description 2 | [Link 2](https://example.com/file2) |
+| ARCHS4 count data    | Description 3 | [Link 3](https://example.com/file3) |
 
 ## Usage
 
@@ -28,15 +32,15 @@ Examples and instructions on how to use the project.
 
 To load BioRAG, follow these steps:
 
-1. Open the terminal.
-2. Navigate to the directory where BioRAG is installed.
-3. Run the following command:
+1. Download the following files.
+2. Initialize the BioRAG object in the following way:
+3. Run biorag with a gene set query and textual query:
 
     ```bash
     biorag
     ```
 
-This will load BioRAG and you can start using it for your project.
+The gene set is a list, and the textual query is a string python object.
 
 ## License
 
