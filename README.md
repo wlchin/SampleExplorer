@@ -2,7 +2,7 @@
 
 This is the repository for BioRAG. BioRAG can identify gene signature enrichment under relevant transcriptomic conditions within the ARCHS4 database, using a researcher-supplied gene set or text-based experimental description. 
 
-![Image Description](./assets/BioRAG.png)
+![Image Description](https://github.com/wlchin/bioRAG/blob/master/assets/BioRAG.png)
 
 ## Table of Contents
 
