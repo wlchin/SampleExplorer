@@ -89,7 +89,9 @@ All BioRAG searches should contain at least a text query or a gene set query. Us
 
 ## Modifying searches using different expansion strategies
 
-By default, BioRAG will perform semantic search, followed by transcriptomic expansion. However, this search strategy can be modified to use only semantic search alone (perfoming the expansion step using semantic similiarity). The "seed" and "expand" parameters accepts either "transcriptome" or "semantic" as options.
+By default, BioRAG will perform semantic search, followed by transcriptomic expansion. However, this search strategy can be modified. For instance, one can use semantic search, followed by perfoming the expansion step using semantic similiarity. In this case, the transcriptome vector store is not queried. 
+
+The "seed" and "expand" parameters accepts either "transcriptome" or "semantic" as options.
 
 1. Example 1 - perform semantic search, followed by transcriptome expansion.
 
