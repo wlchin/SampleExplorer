@@ -9,6 +9,7 @@ This is the repository for BioRAG. BioRAG can identify relevant studies within t
 - [Installation](#installation)
 - [Usage](#usage)
 - [License](#license)
+- [References](#references)
 
 ## Installation
 
@@ -26,7 +27,7 @@ These additional files will need to be downloaded. Below is a table containing a
 |-----------|-------------|------|
 | semantic_db.h5ad   | semantic vector store | [Link 1](https://example.com/file1) |
 | transcriptomic_db.h5ad   | transcriptomic vector store | [Link 2](https://example.com/file2) |
-| human_gene_v2.2.h5    | ARCHS4 count data | [Link 3](https://example.com/file3) |
+| human_gene_v2.2.h5    | ARCHS4 hdf5 database[^1] | [Link 3](https://example.com/file3) |
 
 ## Usage
 
@@ -38,7 +39,7 @@ To load BioRAG, follow these steps:
     ```python
     from biorag import query_db
 
-    new_query_db = query_db(SEMANTIC_VECTOR_STORE_PATH, TRANSCRIPTOME_VECTOR_STORE_PATH, COUNT_H5_PATH)
+    new_query_db = query_db(SEMANTIC_VECTOR_STORE_PATH, TRANSCRIPTOME_VECTOR_STORE_PATH, ARCHS4_HDF5_DATABASE_PATH)
 
     ```
 
@@ -54,7 +55,7 @@ To load BioRAG, follow these steps:
 
     ```
 
-4. The results from BioRAG are in the form of a a pandas dataframe. The rows are <u>samples</u> from the most relevant studies to the query with associated experimental metadata.
+4. The results from BioRAG are in the form of pandas dataframe. The rows are samples from the most relevant studies to the query with associated experimental metadata.
 
 ## Modifying searches using different inputs
 
@@ -127,3 +128,7 @@ To further refine the set of samples and studies returned by BioRAG search, ssGS
 ## License
 
 BioRAG is provided under the GNU General Public License (GPL).
+
+## References
+
+[^1]: Lachmann A, Torre D, Keenan AB, Jagodnik KM, Lee HJ, Wang L, Silverstein MC, Ma'ayan A. Massive mining of publicly available RNA-seq data from human and mouse. Nat Commun. 2018 Apr 10;9(1):1366. doi: 10.1038/s41467-018-03751-6. PMID: 29636450; PMCID: PMC5893633.
