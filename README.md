@@ -1,6 +1,6 @@
 # BioRAG
 
-This is the repository for BioRAG. BioRAG can identify gene signature enrichment under relevant transcriptomic conditions within the ARCHS4 database, using a researcher-supplied gene set or text-based experimental description. 
+This is the repository for BioRAG. BioRAG can identify gene signature enrichment under relevant transcriptomic conditions within the ARCHS4 database, using a text-based query or a gene set. 
 
 ![Image Description](https://github.com/wlchin/bioRAG/blob/master/assets/BioRAG.png)
 
@@ -14,9 +14,9 @@ This is the repository for BioRAG. BioRAG can identify gene signature enrichment
 
 Install BioRAG via PyPI with the following command:
 
-    ```bash
-    pip install biorag
-    ```
+```
+pip install biorag
+```
 
 ### Additional files
 
@@ -29,8 +29,6 @@ These additional files will need to be downloaded. Below is a table containing a
 | human_gene_v2.2.h5    | ARCHS4 count data | [Link 3](https://example.com/file3) |
 
 ## Usage
-
-Examples and instructions on how to use the project.
 
 To load BioRAG, follow these steps:
 
@@ -50,7 +48,7 @@ To load BioRAG, follow these steps:
 
     ```
 
-3. Run BioRAG with a gene set query and textual query. The gene set is a list, and the textual query is a string.
+3. Run BioRAG with a gene set query and textual query. The gene set is a python list, and the textual query is a python string.
 
     ```python
 
@@ -62,11 +60,11 @@ To load BioRAG, follow these steps:
 
     ```
 
-4. The results from BioRAG are in the form of a a pandas dataframe, describing the most relevant studies to the query.
+4. The results from BioRAG are in the form of a a pandas dataframe. The rows are <u>samples</u> from the most relevant studies to the query with associated experimental metadata.
 
-## Modifying searches
+## Modifying searches using different inputs
 
-All BioRAG searches should contain at least a text query. Users can choose one of several search strategies:
+All BioRAG searches should contain at least a text query. Users can choose one of two search strategies:
 
 - Strategy 1: Text as input only
 
@@ -84,13 +82,47 @@ All BioRAG searches should contain at least a text query. Users can choose one o
 
     ```
 
-By default, BioRAG will perform semantic search, followed by transcriptomic expansion. However, this search strategy can be modified to use only semantic search alone (perfoming the expansion step using semantic similiarity). The "expand" parameter accepts either "transcriptome" or "semantic" as options.
+- Strategy 3: Gene set as input
 
     ```python
 
-    result = new_query_db(geneset = geneset_query, text_query = text_query, expand = "transcriptome")
+    result = new_query_db(text_query = None, geneset = geneset_query)
 
     ```
+
+## Modifying searches using different expansion strategies
+
+By default, BioRAG will perform semantic search, followed by transcriptomic expansion. However, this search strategy can be modified to use only semantic search alone (perfoming the expansion step using semantic similiarity). The "seed" and "expand" parameters accepts either "transcriptome" or "semantic" as options.
+
+1. Example 1 - perform semantic search, followed by transcriptome expansion.
+
+    ```python
+
+    result = new_query_db(text_query = text_query, geneset = geneset_query, search = "semantic", expand = "transcriptome")
+
+    ```
+
+2. Example 2 - perform transcriptome search, followed by semantic expansion.
+
+    ```python
+
+    result = new_query_db(text_query = text_query, geneset = geneset_query, search = "transcriptome", expand = "semantic")
+
+    ```
+
+2. Example 3 - perform semantic search, followed by semantic expansion, using only a text query.
+
+    ```python
+
+    result = new_query_db(text_query = text_query, geneset = None, search = "semantic", expand = "semantic")
+
+    ```
+
+The types of searches performed depends on input. If only a gene set is supplied, the search step defaults to "transcriptome", with the user able to select between "transcriptome" and "semantic" for the expansion step.
+
+## Optional single sample GSEA
+
+To further refine the set of samples and studies returned by bioRAG search, ssGSEA can be peformed on all samples returned by the query. Use the "perform_enrichment" parameter to specifiy if ssGSEA should be performed on all samples. If so, the returned dataframe will contain enrichment scores, pvalues and FDRs.
 
 ## License
 
