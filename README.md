@@ -1,6 +1,6 @@
 # BioRAG
 
-This is the repository for BioRAG. BioRAG can identify gene signature enrichment under relevant transcriptomic conditions within the ARCHS4 database, using a text-based query or a gene set. 
+This is the repository for BioRAG. BioRAG can identify relevant studies within the ARCHS4 database, using a text-based query or a gene set. 
 
 ![Image Description](https://github.com/wlchin/bioRAG/blob/master/assets/BioRAG.png)
 
@@ -33,18 +33,12 @@ These additional files will need to be downloaded. Below is a table containing a
 To load BioRAG, follow these steps:
 
 1. Download the additional files described above.
-2. Instantiate the search functions in following way:
+2. Instantiate a query_db object to perform BioRAG search in following way:
     
     ```python
     from biorag import query_db
 
-    new_query_db = query_db(SEMANTIC_PATH, TRANSCRIPTOME_PATH, COUNT_H5_PATH)
-
-    text_query = "This text query usually describes the experiment"
-
-    geneset_query = ["IFNG", "IRF1", "IFR2"]
-
-    new_query_db(geneset = geneset_query, text_query = text_query)
+    new_query_db = query_db(SEMANTIC_VECTOR_STORE_PATH, TRANSCRIPTOME_VECTOR_STORE_PATH, COUNT_H5_PATH)
 
     ```
 
@@ -56,7 +50,7 @@ To load BioRAG, follow these steps:
 
     geneset_query = ["IFNG", "IRF1", "IFR2"]
 
-    result = new_query_db(geneset = geneset_query, text_query = text_query)
+    result = new_query_db.search(geneset = geneset_query, text_query = text_query)
 
     ```
 
@@ -70,7 +64,7 @@ All BioRAG searches should contain at least a text query. Users can choose one o
 
     ```python
 
-    result = new_query_db(text_query = text_query, geneset = None)
+    result = new_query_db.search(text_query = text_query, geneset = None)
 
     ```
 
@@ -78,7 +72,7 @@ All BioRAG searches should contain at least a text query. Users can choose one o
 
     ```python
 
-    result = new_query_db(text_query = text_query, geneset = geneset_query)
+    result = new_query_db.search(text_query = text_query, geneset = geneset_query)
 
     ```
 
@@ -86,7 +80,7 @@ All BioRAG searches should contain at least a text query. Users can choose one o
 
     ```python
 
-    result = new_query_db(text_query = None, geneset = geneset_query)
+    result = new_query_db.search(text_query = None, geneset = geneset_query)
 
     ```
 
@@ -98,7 +92,7 @@ By default, BioRAG will perform semantic search, followed by transcriptomic expa
 
     ```python
 
-    result = new_query_db(text_query = text_query, geneset = geneset_query, search = "semantic", expand = "transcriptome")
+    result = new_query_db.search(text_query = text_query, geneset = geneset_query, search = "semantic", expand = "transcriptome")
 
     ```
 
@@ -106,7 +100,7 @@ By default, BioRAG will perform semantic search, followed by transcriptomic expa
 
     ```python
 
-    result = new_query_db(text_query = text_query, geneset = geneset_query, search = "transcriptome", expand = "semantic")
+    result = new_query_db.search(text_query = text_query, geneset = geneset_query, search = "transcriptome", expand = "semantic")
 
     ```
 
@@ -114,7 +108,7 @@ By default, BioRAG will perform semantic search, followed by transcriptomic expa
 
     ```python
 
-    result = new_query_db(text_query = text_query, geneset = None, search = "semantic", expand = "semantic")
+    result = new_query_db.search(text_query = text_query, geneset = None, search = "semantic", expand = "semantic")
 
     ```
 
@@ -123,6 +117,12 @@ The types of searches performed depends on input. If only a gene set is supplied
 ## Optional single sample GSEA
 
 To further refine the set of samples and studies returned by bioRAG search, ssGSEA can be peformed on all samples returned by the query. Use the "perform_enrichment" parameter to specifiy if ssGSEA should be performed on all samples. If so, the returned dataframe will contain enrichment scores, pvalues and FDRs.
+
+```python
+
+    result = new_query_db.search(text_query = text_query, geneset = None, search = "semantic", expand = "semantic", perform_enrichment = True)
+
+```
 
 ## License
 
