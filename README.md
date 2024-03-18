@@ -1,6 +1,6 @@
 # BioRAG
 
-This is the repository for BioRAG. BioRAG can identify relevant studies within the ARCHS4 database, using a text-based query or a gene set. 
+This is the repository for BioRAG[^1]. BioRAG can identify relevant studies within the ARCHS4 database, using a text-based query or a gene set. 
 
 ![Image Description](https://github.com/wlchin/bioRAG/blob/master/assets/BioRAG.png)
 
@@ -131,4 +131,5 @@ BioRAG is provided under the GNU General Public License (GPL).
 
 ## References
 
-[^1]: Lachmann A, Torre D, Keenan AB, Jagodnik KM, Lee HJ, Wang L, Silverstein MC, Ma'ayan A. Massive mining of publicly available RNA-seq data from human and mouse. Nat Commun. 2018 Apr 10;9(1):1366. doi: 10.1038/s41467-018-03751-6. PMID: 29636450; PMCID: PMC5893633.
+[^1]: Chin WL, & Lassmann, T. (2024). Language models improve the discovery of public RNA-seq data. *bioRxiv*. doi:10.1101/123456
+[^2]: Lachmann A, Torre D, Keenan AB, Jagodnik KM, Lee HJ, Wang L, Silverstein MC, Ma'ayan A. Massive mining of publicly available RNA-seq data from human and mouse. Nat Commun. 2018 Apr 10;9(1):1366. doi: 10.1038/s41467-018-03751-6. PMID: 29636450; PMCID: PMC5893633.
