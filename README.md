@@ -29,6 +29,8 @@ These additional files will need to be downloaded. Below is a table containing a
 | transcriptomic_db.h5ad   | transcriptomic vector store | [Link 2](https://example.com/file2) |
 | human_gene_v2.2.h5    | ARCHS4 hdf5 database[^2] | [Link 3](https://example.com/file3) |
 
+Both the semantic vector stores and the transcriptomic vector stores are AnnData objects, containing both the embedding matrices and the indices which link each embedding vector to an experiment in the ARCHS4 database. Additionally, the transcriptomic vector store also contains derived count data of "representative transcriptomes" in the ARCHS4 database. If transcriptome search is performed as the initial step, the count data is used to search for studies in the ARCHS4 database containing enriched samples, using ssGSEA (single sample gene set enrichment analysis) to rank the most relevant samples. 
+
 ## Usage
 
 To load BioRAG, follow these steps:
@@ -43,7 +45,7 @@ To load BioRAG, follow these steps:
 
     ```
 
-3. Run BioRAG with a gene set query and textual query. The gene set is a python list, and the textual query is a python string.
+3. Run BioRAG with a gene set query and/or textual query. The gene set is a python list, and the textual query is a python string.
 
     ```python
 
@@ -59,9 +61,9 @@ To load BioRAG, follow these steps:
 
 ## Modifying searches using different inputs
 
-All BioRAG searches should contain at least a text query. Users can choose one of several search strategies:
+All BioRAG searches should contain at least a text query or a gene set query. Users can choose one of several search strategies, with examples illustrated below:
 
-- Strategy 1: Text as input only
+- Strategy 1: Text only as input
 
     ```python
 
@@ -77,7 +79,7 @@ All BioRAG searches should contain at least a text query. Users can choose one o
 
     ```
 
-- Strategy 3: Gene set as input
+- Strategy 3: Gene set only as input
 
     ```python
 
@@ -113,9 +115,9 @@ By default, BioRAG will perform semantic search, followed by transcriptomic expa
 
     ```
 
-The types of searches performed depends on input. If only a gene set is supplied, the search step defaults to "transcriptome", with the user able to select between "transcriptome" and "semantic" for the expansion step.
+The types of searches which can be performed depend on input. For instance,iIf only a gene set is supplied, the search step defaults to "transcriptome", with the user able to select between "transcriptome" and "semantic" for the expansion step.
 
-## Optional single sample GSEA (ssGSEA)
+## Optional single sample gene set enrichment analysis (ssGSEA)
 
 To further refine the set of samples and studies returned by BioRAG search, ssGSEA can be peformed on all samples returned by the query. Use the "perform_enrichment" parameter to specifiy if ssGSEA should be performed on all samples. If so, the returned dataframe will contain enrichment scores, pvalues and FDRs.
 
