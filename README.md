@@ -27,7 +27,7 @@ These additional files will need to be downloaded. Below is a table containing a
 |-----------|-------------|------|
 | semantic_db.h5ad   | semantic vector store | [Link 1](https://example.com/file1) |
 | transcriptomic_db.h5ad   | transcriptomic vector store | [Link 2](https://example.com/file2) |
-| human_gene_v2.2.h5    | ARCHS4 hdf5 database[^1] | [Link 3](https://example.com/file3) |
+| human_gene_v2.2.h5    | ARCHS4 hdf5 database[^2] | [Link 3](https://example.com/file3) |
 
 ## Usage
 
@@ -131,5 +131,5 @@ BioRAG is provided under the GNU General Public License (GPL).
 
 ## References
 
-[^1]: Chin WL, & Lassmann, T. (2024). Language models improve the discovery of public RNA-seq data. *bioRxiv*. doi:10.1101/123456
+[^1]: Chin WL, & Lassmann, T. (2024). Language models improve the discovery of public RNA-seq data. *bioRxiv*.
 [^2]: Lachmann A, Torre D, Keenan AB, Jagodnik KM, Lee HJ, Wang L, Silverstein MC, Ma'ayan A. Massive mining of publicly available RNA-seq data from human and mouse. Nat Commun. 2018 Apr 10;9(1):1366. doi: 10.1038/s41467-018-03751-6. PMID: 29636450; PMCID: PMC5893633.
