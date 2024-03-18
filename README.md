@@ -58,7 +58,7 @@ To load BioRAG, follow these steps:
 
 ## Modifying searches using different inputs
 
-All BioRAG searches should contain at least a text query. Users can choose one of two search strategies:
+All BioRAG searches should contain at least a text query. Users can choose one of several search strategies:
 
 - Strategy 1: Text as input only
 
@@ -114,9 +114,9 @@ By default, BioRAG will perform semantic search, followed by transcriptomic expa
 
 The types of searches performed depends on input. If only a gene set is supplied, the search step defaults to "transcriptome", with the user able to select between "transcriptome" and "semantic" for the expansion step.
 
-## Optional single sample GSEA
+## Optional single sample GSEA (ssGSEA)
 
-To further refine the set of samples and studies returned by bioRAG search, ssGSEA can be peformed on all samples returned by the query. Use the "perform_enrichment" parameter to specifiy if ssGSEA should be performed on all samples. If so, the returned dataframe will contain enrichment scores, pvalues and FDRs.
+To further refine the set of samples and studies returned by BioRAG search, ssGSEA can be peformed on all samples returned by the query. Use the "perform_enrichment" parameter to specifiy if ssGSEA should be performed on all samples. If so, the returned dataframe will contain enrichment scores, pvalues and FDRs.
 
 ```python
 
