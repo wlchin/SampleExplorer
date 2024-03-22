@@ -1,13 +1,7 @@
 import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
-from sentence_transformers import SentenceTransformer
-import anndata as ad
-import decoupler as dc
 import numpy as np
-from scipy.spatial.distance import pdist
-import statsmodels.stats.multitest as smm
-import pickle
 from .rag_embedding import Rag_embedding
+import requests
 
 class Sample_to_series_map:
     def __init__(self, h5_path, rag_index_path, rag_embedding_path):
@@ -44,7 +38,6 @@ class Sample_to_series_map:
         experimental_text = self.retrieve_text(series_list)
         avg = self.rag_embedding_object.get_averages_between_queries(query, experimental_text)
         return avg
-
 
 
 class ARCHS4_API_query:

@@ -35,35 +35,27 @@ class Query_DB:
         return x
 
     def get_top_samples(self, df, n = 1000):
-        df_meta = self.transcriptome_embedding.embeddings_index
+        df_meta = self.transcriptome_embedding.embeddings_index.copy()
         samps = df.iloc[:,1].sort_values(ascending = False).head(n).index.to_list()
-        series_of_interest = df_meta[df_meta.index.isin(samps)]["series_id"]
+        series_of_interest = df_meta[df_meta.index.isin(samps)]
         return series_of_interest
 
     def transcriptome_search(self, geneset, nsamples = 1000):
         my_list = self.transcriptome_enrichment.memmap_adata.obs.index
-
         user_batch_size = 250
-
         output_df1_list = []
-
-        # Iterate over the list in batches with tqdm
         for i in tqdm(range(0, len(my_list), user_batch_size), desc="Processing Batches", unit="batch"):
             try:
                 samps = my_list[i:i + user_batch_size]
                 df1 = self.transcriptome_enrichment.run_decouplr_on_memmaped_adata_with_samples(geneset, samps)
-
                 # Store the output from each iteration
-                output_df1_list.append(df1)
-                
+                output_df1_list.append(df1)         
             except:
                 print("failure", "batch: ", str(i))
-                print(traceback.print_exc())
-            
-        final_df1 = pd.concat(output_df1_list).astype('float32')
+        final_df1 = pd.concat(output_df1_list)
         series_of_interest = self.get_top_samples(final_df1, n = nsamples)
-        return final_df1, series_of_interest
-
+        return  series_of_interest, series_of_interest["series_id"]
+        
 
     def semantic_search(self, test_text, k = 50):
         df_res = self.rag_embedding.query_rag(test_text, k = k)

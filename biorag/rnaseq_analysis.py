@@ -1,16 +1,9 @@
 
 import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
-from sentence_transformers import SentenceTransformer
 import anndata as ad
 import decoupler as dc
 import numpy as np
-from scipy.spatial.distance import pdist
-import statsmodels.stats.multitest as smm
-import pickle
 import archs4py as a4
-import os
-
 
 class RNASeqAnalysis:
     def __init__(self, file):
@@ -55,28 +48,15 @@ class RNASeqAnalysis:
 
     def perform_enrichment_on_series(self, query_series, gene_set):
         
-        current_ad = self.create_anndata_series(query_series)
-        
-        gene_set = self.list_to_dc_geneset(gene_set)
-        
-        dc.run_ora(
-            mat=current_ad,
-            net=gene_set,
-            source='geneset',
-            target='genesymbol',
-            verbose=True, use_raw=False
-        )
-
-        results = current_ad.obsm['ora_estimate']
-        results["pvals"] = current_ad.obsm['ora_pvals']
-
-        df_res = pd.concat([results, current_ad.obs], axis=1)
-        #max_index = df_res.groupby('series_id')['query_gene_set'].idxmax()
-
-        #result_df = df_res.loc[max_index]
+        samples_metadata = self.create_samples_from_series(query_series)
+        df_res = self.perform_enrichment_on_samples_batched(samples_metadata.index, gene_set)
         return df_res
+    
+    def create_samples_from_series(self, series):
+        samples = a4.meta.series(self.file, series)
+        return samples
 
-    def perform_enrichment_on_samples(self, query_sample_list, gene_set):
+    def perform_enrichment_on_samples(self, query_sample_list, gene_set): 
         
         current_ad = self.create_anndata_from_samples(query_sample_list)
         
