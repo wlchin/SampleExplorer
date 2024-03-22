@@ -1,4 +1,4 @@
-# BioRAG
+# BioRAG ![Coverage](assets/coverage.svg)
 
 This is the repository for BioRAG[^1]. BioRAG can identify relevant studies within the ARCHS4 database, using a text-based query or a gene set. 
 
@@ -64,17 +64,16 @@ To load BioRAG, follow these steps:
 - The "expansion_studies" holds a dataframe of studies from the expansion step, 
 - The "samples" variable holds a dataframe of the relevant samples, with metadata derived from the ARCHS4 database. 
 
-Below, these dataframes are accessed from the Results object and saved as CSV files.
-
-    ```python
+```python
 
     result = new_query_db.search(geneset = geneset_query, text_query = text_query)
 
+    # save the results as csv files
     result.seed_studies.to_csv("relevant_seed_studies.csv")
     result.expansion_studies.to_csv("relevant_expansion_studies.csv")
     result.samples.to_csv("relevant_samples.csv")
 
-    ```
+```
 
 ## Modifying searches using different inputs
 
