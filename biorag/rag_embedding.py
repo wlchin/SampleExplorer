@@ -1,21 +1,15 @@
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
-import anndata as ad
-import decoupler as dc
 import numpy as np
-from scipy.spatial.distance import pdist
-import statsmodels.stats.multitest as smm
-import pickle
+
 
 class Rag_embedding:
-    def __init__(self, rag_index_path, rag_embedding_path):
+    def __init__(self, rag_index, rag_embedding_matrix):
         print("loading transformer")
         self.model = SentenceTransformer("paraphrase-MiniLM-L6-v2")
-        self.rag_embedding_index = pd.read_pickle(rag_index_path)
-
-        with open(rag_embedding_path, "rb") as file:
-            self.rag_embedding_matrix = pickle.load(file)
+        self.rag_embedding_index = rag_index
+        self.rag_embedding_matrix = rag_embedding_matrix
 
     def get_gse_from_rag_index(self, ind):
         """helper"""
