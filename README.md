@@ -21,12 +21,13 @@ pip install biorag
 
 ### Additional files
 
+
 These additional files will need to be downloaded. Below is a table containing a description of these files, and the links.
-| File Name | Description | Link | Size | checksum |
-|-----------|-------------|------|------|--------|
-| semantic_db.h5ad   | semantic vector store | [Link 1](https://data.pawsey.org.au/download/RNAseq_AB1_Renca/BioRAG/semantic_db.h5ad) | 58Mb | bd23f8835032dcd709f8ca05915038b3 |
-| transcriptomic_db.h5ad   | transcriptomic vector store | [Link 2](https://data.pawsey.org.au/download/RNAseq_AB1_Renca/BioRAG/transcriptomic_db.h5ad) | 38G | d26e564653424ed6e189aea7d0be5d4d |
-| human_gene_v2.2.h5    | ARCHS4 hdf5 database[^2] | [Link 3](https://s3.dev.maayanlab.cloud/archs4/files/human_gene_v2.2.h5) | 37GB | f546fdecc0ba20bf2a5571628f132ca5 |
+| File Name | Description | Size | checksum |
+|-----------|-------------|------|----------|
+| semantic_db.h5ad   | [semantic vector store](https://data.pawsey.org.au/download/RNAseq_AB1_Renca/BioRAG/semantic_db.h5ad) | 58Mb | bd23f8835032dcd709f8ca05915038b3 |
+| transcriptomic_db.h5ad   | [transcriptomic vector store](https://data.pawsey.org.au/download/RNAseq_AB1_Renca/BioRAG/transcriptomic_db.h5ad) | 38GB | d26e564653424ed6e189aea7d0be5d4d |
+| human_gene_v2.2.h5    | ARCHS4[^2] [hdf5 database](https://s3.dev.maayanlab.cloud/archs4/files/human_gene_v2.2.h5) | 37GB | f546fdecc0ba20bf2a5571628f132ca5 |
 
 Both the semantic vector stores and the transcriptomic vector stores are AnnData[^3] objects, containing both the embedding matrices and the indices which link each embedding vector to an experiment in the ARCHS4 database. Additionally, the transcriptomic vector store also contains derived count data of "representative transcriptomes" in the ARCHS4 database. 
 
@@ -61,7 +62,9 @@ To load BioRAG, follow these steps:
 4. The output is a Results object, which is composed of three pandas dataframes, which can be accessed via dot notation. 
 - The "seed_studies" variable holds a dataframe containing study metadata from the search step. 
 - The "expansion_studies" holds a dataframe of studies from the expansion step, 
-- The "samples" variable holds a dataframe of the relevant samples, with metadata derived from the ARCHS4 database. Below, these dataframes are accessed from the Results object and saved as CSV files.
+- The "samples" variable holds a dataframe of the relevant samples, with metadata derived from the ARCHS4 database. 
+
+Below, these dataframes are accessed from the Results object and saved as CSV files.
 
     ```python
 
