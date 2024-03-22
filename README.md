@@ -22,14 +22,13 @@ pip install biorag
 ### Additional files
 
 These additional files will need to be downloaded. Below is a table containing a description of these files, and the links.
+| File Name | Description | Link | Size | checksum |
+|-----------|-------------|------|------|--------|
+| semantic_db.h5ad   | semantic vector store | [Link 1](https://data.pawsey.org.au/download/RNAseq_AB1_Renca/BioRAG/semantic_db.h5ad) | 58Mb | bd23f8835032dcd709f8ca05915038b3 |
+| transcriptomic_db.h5ad   | transcriptomic vector store | [Link 2](https://data.pawsey.org.au/download/RNAseq_AB1_Renca/BioRAG/transcriptomic_db.h5ad) | 38G | d26e564653424ed6e189aea7d0be5d4d |
+| human_gene_v2.2.h5    | ARCHS4 hdf5 database[^2] | [Link 3]('https://s3.dev.maayanlab.cloud/archs4/files/human_gene_v2.2.h5') | 37GB | $MD5SUM3$ |
 
-| File Name | Description | Link |
-|-----------|-------------|------|
-| semantic_db.h5ad   | semantic vector store | [Link 1](https://example.com/file1) |
-| transcriptomic_db.h5ad   | transcriptomic vector store | [Link 2](https://example.com/file2) |
-| human_gene_v2.2.h5    | ARCHS4 hdf5 database[^2] | [Link 3](https://example.com/file3) |
-
-Both the semantic vector stores and the transcriptomic vector stores are AnnData objects, containing both the embedding matrices and the indices which link each embedding vector to an experiment in the ARCHS4 database. Additionally, the transcriptomic vector store also contains derived count data of "representative transcriptomes" in the ARCHS4 database. If transcriptome search is performed as the initial step, the count data is used to search for studies in the ARCHS4 database containing enriched samples, using ssGSEA (single sample gene set enrichment analysis) to rank the most relevant samples. 
+Both the semantic vector stores and the transcriptomic vector stores are AnnData[^3] objects, containing both the embedding matrices and the indices which link each embedding vector to an experiment in the ARCHS4 database. Additionally, the transcriptomic vector store also contains derived count data of "representative transcriptomes" in the ARCHS4 database. If transcriptome search is performed as the initial step, the count data is used to search for studies in the ARCHS4 database containing enriched samples, using ssGSEA (single sample gene set enrichment analysis) to rank the most relevant samples. 
 
 ## Usage
 
@@ -149,3 +148,4 @@ Creative Commons Attribution 4.0 International. The Creative Commons Attribution
 
 [^1]: Chin WL, & Lassmann, T. (2024). Language models improve the discovery of public RNA-seq data. *bioRxiv*.
 [^2]: Lachmann A, Torre D, Keenan AB, Jagodnik KM, Lee HJ, Wang L, Silverstein MC, Ma'ayan A. Massive mining of publicly available RNA-seq data from human and mouse. Nat Commun. 2018 Apr 10;9(1):1366. doi: 10.1038/s41467-018-03751-6. PMID: 29636450; PMCID: PMC5893633.
+[^3]: [AnnData] (https://anndata.readthedocs.io/en/latest/)
