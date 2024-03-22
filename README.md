@@ -39,9 +39,9 @@ To load BioRAG, follow these steps:
 2. Instantiate a query_db object to perform BioRAG search in following way:
     
     ```python
-    from biorag import query_db
+    from biorag.biorag import Query_DB
 
-    new_query_db = query_db(SEMANTIC_VECTOR_STORE_PATH, TRANSCRIPTOME_VECTOR_STORE_PATH, ARCHS4_HDF5_DATABASE_PATH)
+    new_query_db = Query_DB(SEMANTIC_VECTOR_STORE_PATH, TRANSCRIPTOME_VECTOR_STORE_PATH, ARCHS4_HDF5_DATABASE_PATH)
 
     ```
 
@@ -57,7 +57,17 @@ To load BioRAG, follow these steps:
 
     ```
 
-4. The results from BioRAG are in the form of pandas dataframe. The rows are samples from the most relevant studies to the query with associated experimental metadata.
+4. The output is a Results object, which is composed of three pandas dataframes, which can be accessed via dot notation. The "seed_studies" variable holds a dataframe containing study metadata from the search step. The "expansion_studies" holds a dataframe of studies from the expansion step, whilst the "samples" variable holds a dataframe of the relevant samples, with metadata derived from the ARCHS4 database. Below, these dataframes are accessed from the Results object and saved as CSV files.
+
+    ```python
+
+    result = new_query_db.search(geneset = geneset_query, text_query = text_query)
+
+    result.seed_studies.to_csv("relevant_seed_studies.csv")
+    result.expansion_studies.to_csv("relevant_expansion_studies.csv")
+    result.samples.to_csv("relevant_samples.csv")
+
+    ```
 
 ## Modifying searches using different inputs
 
@@ -117,15 +127,17 @@ The "seed" and "expand" parameters accepts either "transcriptome" or "semantic" 
 
     ```
 
-The types of searches which can be performed depend on input. For instance,iIf only a gene set is supplied, the search step defaults to "transcriptome", with the user able to select between "transcriptome" and "semantic" for the expansion step.
+The types of searches which can be performed depend on input. For instance,if only a gene set is supplied, the search step defaults to "transcriptome", with the user able to select between "transcriptome" and "semantic" for the expansion step.
 
 ## Optional single sample gene set enrichment analysis (ssGSEA)
 
-To further refine the set of samples and studies returned by BioRAG search, ssGSEA can be peformed on all samples returned by the query. Use the "perform_enrichment" parameter to specifiy if ssGSEA should be performed on all samples. If so, the returned dataframe will contain enrichment scores, pvalues and FDRs.
+To further refine the set of samples and studies returned by BioRAG search, ssGSEA can be peformed on all samples returned by the query. Use the "perform_enrichment" parameter to specifiy if ssGSEA should be performed on all samples. If so, the returned dataframe will contain enrichment scores, pvalues and FDRs. The ssGSEA results will be stored as a dataframe in the "samples" attribute in the Results object.
 
 ```python
 
     result = new_query_db.search(text_query = text_query, geneset = None, search = "semantic", expand = "semantic", perform_enrichment = True)
+
+    results.samples.to_csv("samples_with_ssgsea_results.csv")
 
 ```
 
