@@ -158,15 +158,12 @@ class Query_DB:
                 res_df = pd.concat([enrichment_df, samps], axis = 1)
                 results_object.samples = res_df
             else:
-                samps = self.metafile[self.metafile["series_id"].isin(results_object.seed_studies["gse_id"])]
-                enrichment_df = self.RNASeqAnalysis.perform_enrichment_on_samples_batched(samps.index, geneset)
-                res_df = pd.concat([enrichment_df, samps], axis = 1)
+                samps = self.metafile[self.metafile["series_id"].isin(additional_series["gse_id"])]
+                res_df = samps
                 results_object.samples = res_df
         else:
-            samps = self.metafile[self.metafile["series_id"].isin(additional_series["gse_id"])]
-            res_df = samps
-            results_object.samples = res_df
-
+            results_object.samples = None
+            
         #additional_series = additional_series.drop(["similarity_score"], axis=1).reset_index(drop=True).drop_duplicates() 
         #seed_series = seed_series.drop_duplicates()
 
