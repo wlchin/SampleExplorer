@@ -70,6 +70,14 @@ class Rag_embedding:
         cosine_distances = 1 - cosine_similarities
         sorted_indices = np.argsort(cosine_distances.flatten())
 
+        if len(sorted_indices) < k:
+            k = len(sorted_indices)
+
+        # print(self.rag_embedding_matrix.shape)
+        # print(query_embedding.shape)
+        # print(cosine_distances.shape)
+        # print(sorted_indices)
+
         top_k = k
         results_data = []
 
