@@ -54,7 +54,9 @@ class Query_DB:
                 print("failure", "batch: ", str(i))
         final_df1 = pd.concat(output_df1_list)
         series_of_interest = self.get_top_samples(final_df1, n = nsamples)
-        return  series_of_interest, series_of_interest["series_id"]
+        relevant_series = series_of_interest["series_id"] # extract only studies (series)
+        series_of_interest = series_of_interest.rename(columns={"series_id": "gse_id"})
+        return  series_of_interest, relevant_series
         
 
     def semantic_search(self, test_text, k = 50):
@@ -139,18 +141,16 @@ class Query_DB:
                 additional_series, seed_series = self.transcriptome_search_with_semantic_expansion(geneset, search_n, expand_n)
 
 
-        if perform_enrichment and self.RNASeqAnalysis is not None:
+        if perform_enrichment:
             samps = self.metafile[self.metafile["series_id"].isin(additional_series["gse_id"])]
             enrichment_df = self.RNASeqAnalysis.perform_enrichment_on_samples_batched(samps.index, geneset)
             res_df = pd.concat([enrichment_df, samps], axis = 1)
-        if perform_enrichment==False and self.RNASeqAnalysis is not None:
+        if perform_enrichment==False:
             samps = self.metafile[self.metafile["series_id"].isin(additional_series["gse_id"])]
             res_df = samps
-        if perform_enrichment==True and self.RNASeqAnalysis is None:
-            res_df = None
 
-        additional_series = additional_series.drop(["similarity_score", "Index"], axis=1).reset_index(drop=True).drop_duplicates() 
-        seed_series = seed_series.drop_duplicates()
+        #additional_series = additional_series.drop(["similarity_score"], axis=1).reset_index(drop=True).drop_duplicates() 
+        #seed_series = seed_series.drop_duplicates()
 
         results_object = Results(seed_series, additional_series, res_df)
 
