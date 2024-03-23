@@ -84,7 +84,7 @@ class Query_DB:
     def transcriptome_search_with_semantic_expansion(self, geneset_query, search = 1000, expand= 5):
         if expand == 0:
             series_df, series_of_interest = self.transcriptome_search(geneset_query, search)
-            return series_df, series_df
+            return None, series_df
         else:
             series_df, series_of_interest = self.transcriptome_search(geneset=geneset_query, nsamples=search)
             additional_series = self.get_semantic_series_of_relevance_from_series(series_of_interest, expand)
@@ -93,7 +93,7 @@ class Query_DB:
     def transcriptome_search_with_transcriptome_expansion(self, geneset_query, search = 1000, expand= 5):
         if expand == 0:
             series_df, series_of_interest = self.transcriptome_search(geneset_query, search)
-            return series_df, series_df
+            return None, series_df
         else:
             series_df, series_of_interest = self.transcriptome_search(geneset_query, search)
             additional_series = self.get_transcriptome_series_of_relevance_from_series(series_of_interest, expand)
@@ -103,7 +103,7 @@ class Query_DB:
         print(text_query)
         if expand == 0:
             series_df, series_of_interest = self.semantic_search(text_query, search)
-            return series_df, series_df
+            return None, series_df
         else:
             series_df, series_of_interest = self.semantic_search(text_query, search)
             additional_series = self.get_semantic_series_of_relevance_from_series(series_of_interest, expand)
@@ -112,9 +112,8 @@ class Query_DB:
     def semantic_search_with_transcriptome_expansion(self, text_query, search = 50, expand = 5):
         print(text_query)
         if expand == 0:
-            print("calling this")
             series_df, series_of_interest = self.semantic_search(text_query, search)
-            return series_df, series_df
+            return None, series_df
         else:
             series_df, series_of_interest = self.semantic_search(text_query, search)
             additional_series = self.get_transcriptome_series_of_relevance_from_series(series_of_interest, expand)
@@ -123,6 +122,9 @@ class Query_DB:
     def search(self, geneset, text_query, search = "semantic", expand = "transcriptome", perform_enrichment = True, search_n = 1000, expand_n = 5):
         """this is the main function
         """
+
+        results_object = Results(None, None, None) # new results object
+
         if text_query is None:
             search = "transcriptome"
 
@@ -132,27 +134,41 @@ class Query_DB:
         if search == "semantic":
             if expand == "transcriptome":
                 additional_series, seed_series = self.semantic_search_with_transcriptome_expansion(text_query, search_n, expand_n)
+                results_object.seed_studies = seed_series
+                results_object.expansion_studies = additional_series
             elif expand == "semantic":
                 additional_series, seed_series = self.semantic_search_with_semantic_expansion(text_query, search_n, expand_n)
+                results_object.seed_studies = seed_series
+                results_object.expansion_studies = additional_series
         if search == "transcriptome":
             if expand == "transcriptome":
                 additional_series, seed_series = self.transcriptome_search_with_transcriptome_expansion(geneset, search_n, expand_n)
+                results_object.seed_studies = seed_series
+                results_object.expansion_studies = additional_series
             elif expand == "semantic":
                 additional_series, seed_series = self.transcriptome_search_with_semantic_expansion(geneset, search_n, expand_n)
+                results_object.seed_studies = seed_series
+                results_object.expansion_studies = additional_series
 
 
         if perform_enrichment:
-            samps = self.metafile[self.metafile["series_id"].isin(additional_series["gse_id"])]
-            enrichment_df = self.RNASeqAnalysis.perform_enrichment_on_samples_batched(samps.index, geneset)
-            res_df = pd.concat([enrichment_df, samps], axis = 1)
+            if results_object.expansion_studies is not None:
+                samps = self.metafile[self.metafile["series_id"].isin(results_object.expansion_studies["gse_id"])]
+                enrichment_df = self.RNASeqAnalysis.perform_enrichment_on_samples_batched(samps.index, geneset)
+                res_df = pd.concat([enrichment_df, samps], axis = 1)
+                results_object.samples = res_df
+            else:
+                samps = self.metafile[self.metafile["series_id"].isin(results_object.seed_studies["gse_id"])]
+                enrichment_df = self.RNASeqAnalysis.perform_enrichment_on_samples_batched(samps.index, geneset)
+                res_df = pd.concat([enrichment_df, samps], axis = 1)
+                results_object.samples = res_df
         if perform_enrichment==False:
             samps = self.metafile[self.metafile["series_id"].isin(additional_series["gse_id"])]
             res_df = samps
+            results_object.samples = res_df
 
         #additional_series = additional_series.drop(["similarity_score"], axis=1).reset_index(drop=True).drop_duplicates() 
         #seed_series = seed_series.drop_duplicates()
-
-        results_object = Results(seed_series, additional_series, res_df)
 
         return results_object
 
