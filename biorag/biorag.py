@@ -119,7 +119,7 @@ class Query_DB:
             additional_series = self.get_transcriptome_series_of_relevance_from_series(series_of_interest, expand)
             return additional_series, series_df
 
-    def search(self, geneset, text_query, search = "semantic", expand = "transcriptome", perform_enrichment = True, search_n = 1000, expand_n = 5):
+    def search(self, geneset, text_query, search = "semantic", expand = "transcriptome", perform_enrichment = False, search_n = 1000, expand_n = 5):
         """this is the main function
         """
 
@@ -151,7 +151,7 @@ class Query_DB:
                 results_object.expansion_studies = additional_series
 
 
-        if perform_enrichment:
+        if perform_enrichment and self.RNASeqAnalysis is not None:
             if results_object.expansion_studies is not None:
                 samps = self.metafile[self.metafile["series_id"].isin(results_object.expansion_studies["gse_id"])]
                 enrichment_df = self.RNASeqAnalysis.perform_enrichment_on_samples_batched(samps.index, geneset)
@@ -162,7 +162,7 @@ class Query_DB:
                 enrichment_df = self.RNASeqAnalysis.perform_enrichment_on_samples_batched(samps.index, geneset)
                 res_df = pd.concat([enrichment_df, samps], axis = 1)
                 results_object.samples = res_df
-        if perform_enrichment==False:
+        else:
             samps = self.metafile[self.metafile["series_id"].isin(additional_series["gse_id"])]
             res_df = samps
             results_object.samples = res_df
