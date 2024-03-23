@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "biorag"
-version = "0.1.0"
-description = ""
+version = "0.1.1"
+description = "BioRAG: A tool for textual and gene set search against ARCHS4 data"
 authors = ["wchin <wee.chin@health.wa.gov.au>"]
 readme = "README.md"
 
