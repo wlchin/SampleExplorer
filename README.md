@@ -31,7 +31,6 @@ These additional files will need to be downloaded. Below is a table containing a
 
 Both the semantic vector stores and the transcriptomic vector stores are AnnData[^3] objects, containing both the embedding matrices and the indices which link each embedding vector to an experiment in the ARCHS4 database. Additionally, the transcriptomic vector store also contains derived count data of "representative transcriptomes" in the ARCHS4 database. 
 
-If transcriptome search is performed as the initial step, the count data is used to search for studies in the ARCHS4 database containing enriched samples, using ssGSEA (single sample gene set enrichment analysis) to rank the most relevant samples. 
 
 ## Usage
 
@@ -109,6 +108,8 @@ By default, BioRAG will perform semantic search, followed by transcriptomic expa
 
 The "seed" and "expand" parameters accepts either "transcriptome" or "semantic" as options.
 
+If transcriptome search is performed as the initial step, the count data from "representative transcriptomes" in the transcriptome vector store is used to search for enriched samples, using ssGSEA (single sample gene set enrichment analysis) to rank the most relevant samples. In semantic search, BioRAG retrieves the most semantically similar studies to the text query, using cosine distance as the metric.
+
 1. Example 1 - perform semantic search, followed by transcriptome expansion.
 
     ```python
@@ -143,6 +144,7 @@ To further refine the set of samples and studies returned by BioRAG search, ssGS
 
     result = new_query_db.search(text_query = text_query, geneset = None, search = "semantic", expand = "semantic", perform_enrichment = True)
 
+    # save enrichment results from the sample dataframe
     results.samples.to_csv("samples_with_ssgsea_results.csv")
 
 ```
