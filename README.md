@@ -1,4 +1,4 @@
-# BioRAG ![Coverage](assets/coverage.svg)
+# BioRAG 
 
 This is the repository for BioRAG[^1]. BioRAG can identify relevant studies within the ARCHS4 database, using a text-based query or a gene set. 
 
@@ -12,6 +12,8 @@ This is the repository for BioRAG[^1]. BioRAG can identify relevant studies with
 - [References](#references)
 
 ## Installation
+
+BioRAG requires python =< 3.9 > 4.0. 
 
 Install BioRAG via PyPI with the following command:
 
