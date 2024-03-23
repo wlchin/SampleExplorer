@@ -10,10 +10,14 @@ class Transcriptome_embedding:
         self.embedding_matrix = embedding_matrix
 
     def search_relevant_embeddings_by_sample(self, samples):
+        """
+        This function takes a list of samples and returns the embeddings for those samples"""
         searching = self.embedding_matrix[self.embeddings_index.index.isin(samples),:]
         return searching
 
     def search_relevant_embeddings_by_series(self, series):
+        """This function takes a list of series and returns the embeddings for those series
+        """
         samples = self.embeddings_index[self.embeddings_index["series_id"].isin(series)].index
         searching = self.embedding_matrix[self.embeddings_index.index.isin(samples),:]
         return searching
@@ -71,6 +75,7 @@ class Transcriptome_embedding:
         return results_df
 
     def get_closest_transcriptional_studies_by_sample(self, query_sample, k = 5):
+        """this takes a (single) sample in a list and returns the k closest transcriptional studies"""
         embedding = self.search_relevant_embeddings_by_sample(query_sample)
         query_vector = embedding.reshape(1, -1)
         cosine_similarities = cosine_similarity(query_vector, self.embedding_matrix)
