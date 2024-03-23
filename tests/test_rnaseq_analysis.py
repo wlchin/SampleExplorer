@@ -32,4 +32,4 @@ def test_perform_enrichment_on_samples_batched():
     element_list = ["GSM1000981, GSM1002540","GSM1009637", "GSM1158460"]
     geneset = ["IRF1", "IRF2", "IRF3", "IRF4", "IRF5", "IRF6"]
     res = x.perform_enrichment_on_samples_batched(element_list, geneset)
-    assert res.shape == (2, 8)
+    assert res.shape == (2, 9)

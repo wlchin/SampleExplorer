@@ -24,4 +24,4 @@ def test_rag_sem_df_size():
 
 def test_query_rag():
     df = rag_embedding.query_rag("Trans-chromosomal regulation lincRNA")
-    assert df.iloc[0, 2] == "GSE45157"
+    assert df.iloc[0, 1] == "GSE45157"
