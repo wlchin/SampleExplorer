@@ -94,7 +94,7 @@ class Rag_embedding:
         ]
         results_df["similarity_source"] = "semantic"
 
-        return results_df
+        return results_df.drop("Index", axis=1)
     
     def get_averages_between_queries(self, query, list_of_queries):
         query_embedding = self.model.encode([query])[0]
