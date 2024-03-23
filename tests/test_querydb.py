@@ -15,7 +15,8 @@ test_geneset =  ["IDI1", "SP100","KLF6", "PLPP1", "NEO1", "TSPAN6"]
 
 
 
-new_query_db = Query_DB("tests/test_semantic_db.h5ad", "tests/test_transcriptome_db.h5ad", "tests/human_gene_v2.2.h5")
+#new_query_db = Query_DB("tests/test_semantic_db.h5ad", "tests/test_transcriptome_db.h5ad", "tests/human_gene_v2.2.h5")
+new_query_db = Query_DB("tests/test_semantic_db.h5ad", "tests/test_transcriptome_db.h5ad")
 
 # res = new_query_db.search(test_geneset, "Trans-chromosomal regulation lincRNA", search = "semantic", expand = "transcriptome", search_n = 50, expand_n = 5)
 
@@ -134,11 +135,11 @@ def test_expansion_transcriptome_zero_values():
     """the expansion 0 should yield the same object, regardless of expansion strategy
     """
     res = new_query_db.search(geneset = test_geneset, text_query="Trans-chromosomal regulation lincRNA", \
-                          search = "transcriptome", expand = "transcriptome", perform_enrichment=True, \
+                          search = "transcriptome", expand = "transcriptome", perform_enrichment=False, \
                             search_n = 14, expand_n = 0)
     
     res2 = new_query_db.search(geneset = test_geneset, text_query="Trans-chromosomal regulation lincRNA", \
-                          search = "transcriptome", expand = "semantic", perform_enrichment=True, \
+                          search = "transcriptome", expand = "semantic", perform_enrichment=False, \
                             search_n = 14, expand_n = 0)
     
     assert res.seed_studies.equals(res2.seed_studies)
@@ -147,11 +148,11 @@ def test_expansion_semantic_zero_values():
     """the expansion 0 should yield the same object, regardless of expansion strategy
     """
     res = new_query_db.search(geneset = test_geneset, text_query="Trans-chromosomal regulation lincRNA", \
-                          search = "semantic", expand = "transcriptome", perform_enrichment=True, \
+                          search = "semantic", expand = "transcriptome", perform_enrichment=False, \
                             search_n = 14, expand_n = 0)
     
     res2 = new_query_db.search(geneset = test_geneset, text_query="Trans-chromosomal regulation lincRNA", \
-                          search = "semantic", expand = "semantic", perform_enrichment=True, \
+                          search = "semantic", expand = "semantic", perform_enrichment=False, \
                             search_n = 14, expand_n = 0)
     
     assert res.seed_studies.equals(res2.seed_studies)
