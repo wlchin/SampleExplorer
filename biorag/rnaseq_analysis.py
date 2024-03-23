@@ -15,7 +15,7 @@ class RNASeqAnalysis:
         """
         series_counts = a4.data.series(self.file, series)
         metadata = a4.meta.series(self.file, series)
-        test_ad = ad.AnnData(series_counts.T, dtype = np.float32)
+        test_ad = ad.AnnData(series_counts.T)
         test_ad.obs = metadata
         test_ad.var_names_make_unique()
         return test_ad
@@ -25,7 +25,7 @@ class RNASeqAnalysis:
         """
         sample_counts = a4.data.samples(self.file, samples)
         metadata = a4.meta.samples(self.file, samples)
-        test_ad = ad.AnnData(sample_counts.T, dtype = np.float32)
+        test_ad = ad.AnnData(sample_counts.T)
         test_ad.obs = metadata
         test_ad.var_names_make_unique()
         return test_ad
