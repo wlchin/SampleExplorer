@@ -12,15 +12,40 @@ class Rag_embedding:
         self.rag_embedding_matrix = rag_embedding_matrix
 
     def get_gse_from_rag_index(self, ind):
-        """helper"""
+        """Get the GSE ID from the RAG embedding index.
+
+        Args:
+            ind (int): The index of the GSE ID in the RAG embedding index.
+
+        Returns:
+            str: The GSE ID corresponding to the given index.
+        """
         gse_id = self.rag_embedding_index.iloc[ind, :].to_list()[0]
         return gse_id
 
     def get_gse_text_from_rag_index(self, ind):
+        """
+        Retrieves the GSE text from the RAG index.
+
+        Parameters:
+        - ind (int): The index of the GSE text to retrieve.
+
+        Returns:
+        - gse_id_text (str): The GSE text corresponding to the given index.
+        """
         gse_id_text = self.rag_embedding_index.iloc[ind, :].to_list()[1]
         return gse_id_text
 
     def get_text_linked_to_gse(self, gse_id_query):
+        """
+        Retrieves the text linked to a given GSE ID.
+
+        Parameters:
+        - gse_id_query (str): The GSE ID to query.
+
+        Returns:
+        - str: The text linked to the specified GSE ID.
+        """
         gse_id_text = self.rag_embedding_index[
             self.rag_embedding_index["series_id"].isin([gse_id_query])
         ]["rag_text"].to_list()[0]
@@ -97,6 +122,16 @@ class Rag_embedding:
         return results_df.drop("Index", axis=1)
     
     def get_averages_between_queries(self, query, list_of_queries):
+        """
+        Calculates the average cosine similarity between a query and a list of queries.
+
+        Parameters:
+        query (str): The query string.
+        list_of_queries (list): A list of query strings.
+
+        Returns:
+        float: The average cosine similarity between the query and the list of queries.
+        """
         query_embedding = self.model.encode([query])[0]
         list_embeddings = self.model.encode(list_of_queries)
         
