@@ -16,6 +16,7 @@ statsmodels = "^0.14.1"
 sentence-transformers = "^2.5.1"
 pytest = "^8.1.1"
 pytest-cov = "^4.1.0"
+pytest-codecov = "^0.5.1"
 
 
 [build-system]
