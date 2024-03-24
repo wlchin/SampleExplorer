@@ -52,7 +52,17 @@ class Rag_embedding:
         return gse_id_text
 
     def get_closest_semantic_studies(self, query_gse_id, k=5):
-        """query against gse_id for expansion"""
+        """
+        Retrieves the closest semantic studies based on a given query GSE ID.
+
+        Parameters:
+            query_gse_id (str): The GSE ID to query against for expansion.
+            k (int): The number of closest studies to retrieve. Default is 5.
+
+        Returns:
+            pandas.DataFrame: A DataFrame containing the closest studies along with their similarity scores.
+
+        """
         relevant_embedding_indices = np.where(
             self.rag_embedding_index["series_id"].isin([query_gse_id])
         )
@@ -87,7 +97,16 @@ class Rag_embedding:
         return results_df
     
     def query_rag(self, query, k=5):
-        """query against text"""
+        """
+        Query the RAG (Retrieval-Augmented Generation) model with a given query.
+
+        Args:
+            query (str): The query text.
+            k (int, optional): The number of top results to retrieve. Defaults to 5.
+
+        Returns:
+            pandas.DataFrame: A DataFrame containing the top k results with columns 'similarity_score', 'gse_id', 'gse_id_text', and 'similarity_source'.
+        """
         query_embedding = self.model.encode(query).reshape(1, -1)
         cosine_similarities = cosine_similarity(
             self.rag_embedding_matrix, query_embedding
@@ -97,11 +116,6 @@ class Rag_embedding:
 
         if len(sorted_indices) < k:
             k = len(sorted_indices)
-
-        # print(self.rag_embedding_matrix.shape)
-        # print(query_embedding.shape)
-        # print(cosine_distances.shape)
-        # print(sorted_indices)
 
         top_k = k
         results_data = []
