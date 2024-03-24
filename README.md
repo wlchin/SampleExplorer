@@ -1,4 +1,4 @@
-# BioRAG 
+# BioRAG [![codecov](https://codecov.io/gh/wlchin/bioRAG/graph/badge.svg?token=9GG94JA003)](https://codecov.io/gh/wlchin/bioRAG)
 
 This is the repository for BioRAG[^1]. BioRAG can identify relevant studies within the ARCHS4 database, using a text-based query or a gene set. 
 
