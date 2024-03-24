@@ -1,4 +1,4 @@
-# BioRAG [![codecov](https://codecov.io/gh/wlchin/bioRAG/graph/badge.svg?token=9GG94JA003)](https://codecov.io/gh/wlchin/bioRAG)
+# BioRAG [![codecov](https://codecov.io/gh/wlchin/bioRAG/graph/badge.svg?token=9GG94JA003)](https://codecov.io/gh/wlchin/bioRAG) ![workflow](https://github.com/wlchin/bioRAG/actions/workflows/python-package.yml/badge.svg)
 
 This is the repository for BioRAG[^1]. BioRAG can identify relevant studies within the ARCHS4 database, using a text-based query or a gene set. 
 
@@ -13,7 +13,7 @@ This is the repository for BioRAG[^1]. BioRAG can identify relevant studies with
 
 ## Installation
 
-BioRAG requires python =< 3.9 > 4.0. 
+BioRAG has been tested on python 3.9, 3.10, and 3.11. 
 
 Install BioRAG via PyPI with the following command:
 
