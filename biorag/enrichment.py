@@ -38,8 +38,8 @@ class Transcriptome_enrichment:
 
         adata = self.memmap_adata
         query_adata = adata[adata.obs.index.isin(samples_list)].to_memory()
+        query_adata.var_names_make_unique()
         np.nan_to_num(query_adata.X, copy=False, nan=0.0, posinf=0.0, neginf=0.0)
-        #query_adata.var_names_make_unique()
 
         dc.run_ora(
             mat=query_adata,

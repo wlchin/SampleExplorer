@@ -12,7 +12,9 @@ from .enrichment import Transcriptome_enrichment
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import warnings
+import logging
 warnings.filterwarnings('ignore')
+ 
  
 class Query_DB:
     def __init__(self, semantic_vector_store, transcriptomic_vector_store, h5file = None):
@@ -50,8 +52,9 @@ class Query_DB:
                 df1 = self.transcriptome_enrichment.run_decouplr_on_memmaped_adata_with_samples(geneset, samps)
                 # Store the output from each iteration
                 output_df1_list.append(df1)         
-            except:
-                print("failure", "batch: ", str(i))
+            except Exception as e:
+                logging.error(f"Failure in batch {i}: {str(e)}")
+                logging.error(traceback.format_exc())
         final_df1 = pd.concat(output_df1_list)
         series_of_interest = self.get_top_samples(final_df1, n = nsamples)
         relevant_series = series_of_interest["series_id"] # extract only studies (series)
