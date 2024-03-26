@@ -5,6 +5,7 @@ import decoupler as dc
 import numpy as np
 import archs4py as a4
 import statsmodels.stats.multitest as smt
+from tqdm import tqdm
 
 class RNASeqAnalysis:
     def __init__(self, file):
@@ -67,7 +68,7 @@ class RNASeqAnalysis:
         df["geneset"] = "enrichment_score"
         return df
 
-    def perform_enrichment_on_samples_batched(self, element_list, geneset, batch_size=5000):
+    def perform_enrichment_on_samples_batched(self, element_list, geneset, batch_size=2500):
         """
         Perform enrichment analysis on a list of elements in batches.
 
@@ -86,7 +87,7 @@ class RNASeqAnalysis:
         res_list = []
 
         # Iterate over batches
-        for i in range(num_batches):
+        for i in tqdm(range(num_batches)):
             start_index = i * batch_size
             end_index = (i + 1) * batch_size
             batch = element_list[start_index:end_index]
@@ -149,7 +150,7 @@ class RNASeqAnalysis:
             net=gene_set,
             source='geneset',
             target='genesymbol',
-            verbose=True, use_raw=False, min_n = 1
+            verbose=False, use_raw=False, min_n = 1,
         )
 
         results = current_ad.obsm['ora_estimate']
