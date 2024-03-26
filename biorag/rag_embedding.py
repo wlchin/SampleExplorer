@@ -2,12 +2,24 @@ import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 import numpy as np
-
+import logging 
+import sys
 
 class Rag_embedding:
     def __init__(self, rag_index, rag_embedding_matrix):
-        print("loading transformer")
+        self.logger = logging.getLogger(__name__)
+        H = logging.StreamHandler(sys.stdout)
+        H.setLevel(logging.INFO)
+        H.setFormatter(
+            logging.Formatter(
+                fmt="[%(asctime)s] %(levelname)s: %(message)s",
+                datefmt="%d/%m/%Y ( %H:%M:%S )"
+            ))
+        self.logger.addHandler(H)
+
+
         self.model = SentenceTransformer("paraphrase-MiniLM-L6-v2")
+        self.logger.info("Loaded SentenceTransformer model.")
         self.rag_embedding_index = rag_index
         self.rag_embedding_matrix = rag_embedding_matrix
 
