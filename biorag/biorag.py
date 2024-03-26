@@ -12,41 +12,53 @@ from .enrichment import Transcriptome_enrichment
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import warnings
 import logging
-import time
+import sys
 warnings.filterwarnings('ignore')
  
+logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
- 
 class Query_DB:
-    def __init__(self, semantic_vector_store, transcriptomic_vector_store, h5file=None, log_level=logging.INFO):
-        logging.basicConfig(filename='log.txt', level=log_level, format='%(asctime)s %(levelname)s %(message)s')
-        logging.info("Loading transcriptomic vector store...")
+    logger = logging.getLogger(__name__)
+    
+    def __init__(self, semantic_vector_store, transcriptomic_vector_store, h5file=None):
+        self.logger = logging.getLogger(__name__)
+        H = logging.StreamHandler(sys.stdout)
+        H.setLevel(logging.INFO)
+        H.setFormatter(
+            logging.Formatter(
+                fmt="[%(asctime)s] %(levelname)s: %(message)s",
+                datefmt="%d/%m/%Y ( %H:%M:%S )"
+            ))
+        self.logger.addHandler(H)
+
+        self.logger.info("Loading transcriptomic vector store...")
         trans_obj = ad.read_h5ad(transcriptomic_vector_store, backed="r")
-        logging.info("Transcriptomic vector store loaded.")
+        self.logger.info("Transcriptomic vector store loaded.")
         
-        logging.info("Loading semantic vector store...")
+        self.logger.info("Loading semantic vector store...")
         sem_obj = ad.read_h5ad(semantic_vector_store, backed="r")
-        logging.info("Semantic vector store loaded.")
+        self.logger.info("Semantic vector store loaded.")
         
         self.transcriptome_embedding = Transcriptome_embedding(trans_obj.obs, trans_obj.obsm["embedding"])
-        logging.info("Transcriptome embedding initialized.")
+        self.logger.info("Transcriptome embedding initialized.")
         self.rag_embedding = Rag_embedding(sem_obj.obs, sem_obj.X)
-        logging.info("RAG embedding initialized.")
+        self.logger.info("RAG embedding initialized.")
         self.transcriptome_enrichment = Transcriptome_enrichment(trans_obj)        
-        logging.info("Transcriptome object initialized.")
+        self.logger.info("Transcriptome object initialized.")
         
         if h5file is not None:
-            logging.info("Loading RNASeqAnalysis object...")
+            self.logger.info("Loading RNASeqAnalysis object...")
             self.RNASeqAnalysis = RNASeqAnalysis(h5file)
-            logging.info("RNASeqAnalysis object loaded.")
+            self.logger.info("RNASeqAnalysis object loaded.")
             
-            logging.info("Processing metadata...")
+            self.logger.info("Processing metadata...")
             self.metafile = self.process_metadata(h5file)
-            logging.info("Metadata processed.")
+            self.logger.info("Metadata processed.")
         else:
-            logging.info("RNASeqAnalysis object not loaded.")
+            self.logger.info("RNASeqAnalysis object not loaded.")
             self.RNASeqAnalysis = None
-            #self.sample_to_series_map = Sample_to_series_map(h5file, self.rag_embedding)
+        
+        self.logger.info("Query_DB object initialized.")
 
     def process_metadata(self, h5_path):
         """
@@ -101,8 +113,8 @@ class Query_DB:
                 # Store the output from each iteration
                 output_df1_list.append(df1)
             except Exception as e:
-                logging.error(f"Failure in batch {i}: {str(e)}")
-                logging.error(traceback.format_exc())
+                self.logger.error(f"Failure in batch {i}: {str(e)}")
+                self.logger.error(traceback.format_exc())
         final_df1 = pd.concat(output_df1_list)
         series_of_interest = self.get_top_samples(final_df1, n=nsamples)
         relevant_series = series_of_interest["series_id"]  # extract only studies (series)
@@ -276,25 +288,22 @@ class Query_DB:
             raise ValueError("Gene set should not be empty.")
         
         if geneset is not None and len(geneset) < 5:
-            logging.warning("Gene set should have at least 5 genes.")
+            self.logger.warning("Gene set should have at least 5 genes.")
         
         if (n_seed is None and n_expansion is not None) or (n_seed is not None and n_expansion is None):
             raise ValueError("Both n_seed and n_expansion must be either None or filled.")
         
-        # Rest of the code...
-    def search(self, geneset, text_query, search="semantic", expand="transcriptome", perform_enrichment=False, n_seed=None, n_expansion=None):
-        """this is the main function
-        """
-        if geneset is None or len(geneset) == 0:
-            raise ValueError("Gene set should not be empty.")
+        if n_seed == 0:
+            raise ValueError("n_seed should not be zero.")
         
-        if geneset is not None and len(geneset) < 5:
-            logging.warning("Gene set should have at least 5 genes.")
+        if (self.transcriptome_enrichment.memmap_adata.var["gene"].isin(geneset)).sum() == 0:
+            raise ValueError("No genes from the gene set found in the transcriptome.")
         
-        if (n_seed is None and n_expansion is not None) or (n_seed is not None and n_expansion is None):
-            raise ValueError("Both n_seed and n_expansion must be either None or filled.")
-        
-        # Rest of the code...   # Rest of the code...
+        if (self.transcriptome_enrichment.memmap_adata.var["gene"].isin(geneset)).sum() < len(geneset):
+            self.logger.warning("Some genes from the gene set were not found in the transcriptome.")
+            missing_genes = set(geneset) - set(self.transcriptome_enrichment.memmap_adata.var["gene"])
+            missing_genes_percentage = (len(missing_genes) / len(geneset)) * 100
+            self.logger.warning(f"Missing genes from geneset in transcriptome: {missing_genes} ({missing_genes_percentage:.2f}% of geneset)")
 
         results_object = Results(None, None, None) # new results object
 
@@ -342,16 +351,31 @@ class Query_DB:
                 enrichment_df = self.RNASeqAnalysis.perform_enrichment_on_samples_batched(samps.index, geneset)
                 res_df = pd.concat([enrichment_df, samps], axis = 1)
                 results_object.samples = res_df
+                self.logger.info("Performed enrichment on studies in expansion step.")
             else:
-                samps = self.metafile[self.metafile["series_id"].isin(additional_series["gse_id"])]
+                samps = self.metafile[self.metafile["series_id"].isin(results_object.seed_studies["gse_id"])]
+                enrichment_df = self.RNASeqAnalysis.perform_enrichment_on_samples_batched(samps.index, geneset)
+                res_df = pd.concat([enrichment_df, samps], axis = 1)
+                results_object.samples = res_df
+                self.logger.info("No expansion studies found. Performed enrichment on seed studies.")
+        elif perform_enrichment is False and self.RNASeqAnalysis is not None:
+            if results_object.expansion_studies is not None:
+                samps = self.metafile[self.metafile["series_id"].isin(results_object.expansion_studies["gse_id"])]
                 res_df = samps
                 results_object.samples = res_df
+                self.logger.info("Retrieving samples from expansion step. Enrichment not performed.")
+            else:
+                samps = self.metafile[self.metafile["series_id"].isin(results_object.seed_studies["gse_id"])]
+                res_df = samps
+                results_object.samples = res_df
+                self.logger.info("Retrieving samples from search step. Enrichment not performed.")
         else:
+            self.logger.info("Enrichment not performed.")
             results_object.samples = None
             
         #additional_series = additional_series.drop(["similarity_score"], axis=1).reset_index(drop=True).drop_duplicates() 
         #seed_series = seed_series.drop_duplicates()
-
+        self.logger.info("Search completed.")
         return results_object
 
 class Results:
