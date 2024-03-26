@@ -46,7 +46,7 @@ class Transcriptome_enrichment:
             net=geneset,
             source='geneset',
             target='genesymbol',
-            verbose=True, use_raw=False
+            verbose=True, use_raw=False, min_n = 1
         )
         if query_adata.obsm["ora_pvals"].shape[1] > 1:
             return query_adata.obsm["ora_pvals"], query_adata.obsm["ora_estimate"]

@@ -83,7 +83,7 @@ class RNASeqAnalysis:
             net=gene_set,
             source='geneset',
             target='genesymbol',
-            verbose=True, use_raw=False
+            verbose=True, use_raw=False, min_n = 1
         )
 
         results = current_ad.obsm['ora_estimate']
