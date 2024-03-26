@@ -122,7 +122,7 @@ class Query_DB:
             additional_series = self.get_transcriptome_series_of_relevance_from_series(series_of_interest, expand)
             return additional_series, series_df
 
-    def search(self, geneset, text_query, search = "semantic", expand = "transcriptome", perform_enrichment = False, search_n = 1000, expand_n = 5):
+    def search(self, geneset, text_query, search = "semantic", expand = "transcriptome", perform_enrichment = False):
         """this is the main function
         """
 
@@ -136,20 +136,20 @@ class Query_DB:
 
         if search == "semantic":
             if expand == "transcriptome":
-                additional_series, seed_series = self.semantic_search_with_transcriptome_expansion(text_query, search_n, expand_n)
+                additional_series, seed_series = self.semantic_search_with_transcriptome_expansion(text_query)
                 results_object.seed_studies = seed_series
                 results_object.expansion_studies = additional_series
             elif expand == "semantic":
-                additional_series, seed_series = self.semantic_search_with_semantic_expansion(text_query, search_n, expand_n)
+                additional_series, seed_series = self.semantic_search_with_semantic_expansion(text_query)
                 results_object.seed_studies = seed_series
                 results_object.expansion_studies = additional_series
         if search == "transcriptome":
             if expand == "transcriptome":
-                additional_series, seed_series = self.transcriptome_search_with_transcriptome_expansion(geneset, search_n, expand_n)
+                additional_series, seed_series = self.transcriptome_search_with_transcriptome_expansion(geneset)
                 results_object.seed_studies = seed_series
                 results_object.expansion_studies = additional_series
             elif expand == "semantic":
-                additional_series, seed_series = self.transcriptome_search_with_semantic_expansion(geneset, search_n, expand_n)
+                additional_series, seed_series = self.transcriptome_search_with_semantic_expansion(geneset)
                 results_object.seed_studies = seed_series
                 results_object.expansion_studies = additional_series
 
