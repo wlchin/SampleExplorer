@@ -81,7 +81,7 @@ class Transcriptome_enrichment:
             net=geneset,
             source='geneset',
             target='genesymbol',
-            verbose=True,
+            verbose=False,
             use_raw=False,
             min_n=1
         )
