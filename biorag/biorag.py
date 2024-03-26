@@ -47,9 +47,10 @@ class Query_DB:
             self.metafile = self.process_metadata(h5file)
             logging.info("Metadata processed.")
         else:
+            logging.info("RNASeqAnalysis object not loaded.")
             self.RNASeqAnalysis = None
             #self.sample_to_series_map = Sample_to_series_map(h5file, self.rag_embedding)
-    
+
     def process_metadata(self, h5_path):
         """
         Process metadata from an HDF5 file.
@@ -81,7 +82,18 @@ class Query_DB:
         series_of_interest = df_meta[df_meta.index.isin(samps)]
         return series_of_interest
 
-    def transcriptome_search(self, geneset, nsamples = 1000):
+    def transcriptome_search(self, geneset, nsamples=1000):
+        """
+        Perform a transcriptome search using a given geneset.
+
+        Args:
+            geneset (list): A list of genes to search for in the transcriptome.
+            nsamples (int, optional): The number of top samples to retrieve. Defaults to 1000.
+
+        Returns:
+            tuple: A tuple containing two pandas DataFrames. The first DataFrame contains the top samples of interest,
+                   and the second DataFrame contains the relevant series (studies) associated with the top samples.
+        """
         my_list = self.transcriptome_enrichment.memmap_adata.obs.index
         user_batch_size = 250
         output_df1_list = []
@@ -90,38 +102,72 @@ class Query_DB:
                 samps = my_list[i:i + user_batch_size]
                 df1 = self.transcriptome_enrichment.run_decouplr_on_memmaped_adata_with_samples(geneset, samps)
                 # Store the output from each iteration
-                output_df1_list.append(df1)         
+                output_df1_list.append(df1)
             except Exception as e:
                 logging.error(f"Failure in batch {i}: {str(e)}")
                 logging.error(traceback.format_exc())
         final_df1 = pd.concat(output_df1_list)
-        series_of_interest = self.get_top_samples(final_df1, n = nsamples)
-        relevant_series = series_of_interest["series_id"] # extract only studies (series)
+        series_of_interest = self.get_top_samples(final_df1, n=nsamples)
+        relevant_series = series_of_interest["series_id"]  # extract only studies (series)
         series_of_interest = series_of_interest.rename(columns={"series_id": "gse_id"})
-        return  series_of_interest, relevant_series
+        return series_of_interest, relevant_series
         
-
-    def semantic_search(self, test_text, k = 50):
-        df_res = self.rag_embedding.query_rag(test_text, k = k)
-        return df_res, df_res["gse_id"]
-
-    def get_transcriptome_series_of_relevance_from_series(self, series_of_interest, k = 5):
-        """use this in the series -> series on transcription
+    
+    def semantic_search(self, test_text, k=50):
         """
+        Perform semantic search using the RAG embedding model.
+
+        Parameters:
+        - test_text (str): The text to search for.
+        - k (int): The number of results to retrieve (default is 50).
+
+        Returns:
+        - df_res (DataFrame): The search results as a DataFrame.
+        - df_res["gse_id"] (Series): The series containing the "gse_id" column from the search results.
+        """
+        df_res = self.rag_embedding.query_rag(test_text, k=k)
+        return df_res, df_res["gse_id"]
+ 
+    def get_transcriptome_series_of_relevance_from_series(self, series_of_interest, k=5):
+        """
+        Retrieves a series of transcriptome data that are relevant to the given series of interest.
+
+        Parameters:
+        - series_of_interest (list): A list of series of interest.
+        - k (int): The number of closest transcriptional studies to retrieve for each series.
+
+        Returns:
+        - additional_series (DataFrame): A DataFrame containing the additional series of transcriptome data.
+        """
+
         series_list = []
         target_series = series_of_interest
         for i in tqdm(target_series):
-            res_temp = self.transcriptome_embedding.get_closest_transcriptional_studies(i, k = k)
+            res_temp = self.transcriptome_embedding.get_closest_transcriptional_studies(i, k=k)
             series_list.append(res_temp)
         additional_series = pd.concat(series_list)
         additional_series["gse_id_text"] = [self.rag_embedding.get_text_linked_to_gse(i) for i in additional_series["gse_id"]]
         return additional_series
     
-    def get_semantic_series_of_relevance_from_series(self, series_of_interest, k = 5):
-        """use this in the series -> series on semantic
+    def get_semantic_series_of_relevance_from_series(self, series_of_interest, k=5):
         """
-        additional_series = pd.concat([self.rag_embedding.get_closest_semantic_studies(i, k = k) for i in series_of_interest])
+        Retrieves additional series of relevance based on the input series of interest.
+
+        Parameters:
+        - series_of_interest (list): A list of series of interest.
+        - k (int): The number of closest semantic studies to retrieve for each series.
+
+        Returns:
+        - additional_series (pandas.DataFrame): A DataFrame containing the additional series of relevance.
+
+        Usage:
+        Call this method to retrieve additional series of relevance based on the input series of interest.
+        The method uses the rag_embedding object to get the closest semantic studies for each series.
+        The number of closest semantic studies to retrieve can be specified using the k parameter.
+        """
+        additional_series = pd.concat([self.rag_embedding.get_closest_semantic_studies(i, k=k) for i in series_of_interest])
         return additional_series
+    
 
     def transcriptome_search_with_semantic_expansion(self, geneset_query, search = 1000, expand= 5):
         if expand == 0:
