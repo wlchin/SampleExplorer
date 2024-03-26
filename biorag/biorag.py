@@ -47,15 +47,15 @@ class Query_DB:
         self.logger.info("Transcriptome object initialized.")
         
         if h5file is not None:
-            self.logger.info("Loading RNASeqAnalysis object...")
+            self.logger.info("Loading ARCHS4 database object...")
             self.RNASeqAnalysis = RNASeqAnalysis(h5file)
-            self.logger.info("RNASeqAnalysis object loaded.")
+            self.logger.info("ARCHS4 database object loaded.")
             
-            self.logger.info("Processing metadata...")
+            self.logger.info("Creating series to sample mapping...")
             self.metafile = self.process_metadata(h5file)
-            self.logger.info("Metadata processed.")
+            self.logger.info("DONE.")
         else:
-            self.logger.info("RNASeqAnalysis object not loaded.")
+            self.logger.info("ARCHS4 database object not loaded.")
             self.RNASeqAnalysis = None
         
         self.logger.info("Query_DB object initialized.")
@@ -104,9 +104,10 @@ class Query_DB:
                    and the second DataFrame contains the relevant series (studies) associated with the top samples.
         """
         my_list = self.transcriptome_enrichment.memmap_adata.obs.index
-        user_batch_size = 250
+        user_batch_size = 500
         output_df1_list = []
-        for i in tqdm(range(0, len(my_list), user_batch_size), desc="Processing Batches", unit="batch"):
+        self.logger.info("Starting transcriptome search...")
+        for i in tqdm(range(0, len(my_list), user_batch_size)):
             try:
                 samps = my_list[i:i + user_batch_size]
                 df1 = self.transcriptome_enrichment.run_decouplr_on_memmaped_adata_with_samples(geneset, samps)
@@ -134,6 +135,7 @@ class Query_DB:
         - df_res (DataFrame): The search results as a DataFrame.
         - df_res["gse_id"] (Series): The series containing the "gse_id" column from the search results.
         """
+        self.logger.info("Starting semantic search...")
         df_res = self.rag_embedding.query_rag(test_text, k=k)
         return df_res, df_res["gse_id"]
  
@@ -148,7 +150,7 @@ class Query_DB:
         Returns:
         - additional_series (DataFrame): A DataFrame containing the additional series of transcriptome data.
         """
-
+        self.logger.info("Performing transcriptome expansion...")
         series_list = []
         target_series = series_of_interest
         for i in tqdm(target_series):
@@ -174,6 +176,7 @@ class Query_DB:
         The method uses the rag_embedding object to get the closest semantic studies for each series.
         The number of closest semantic studies to retrieve can be specified using the k parameter.
         """
+        self.logger.info("Performing semantic expansion...")
         additional_series = pd.concat([self.rag_embedding.get_closest_semantic_studies(i, k=k) for i in series_of_interest])
         return additional_series
     
@@ -191,6 +194,9 @@ class Query_DB:
             tuple or None: A tuple containing the additional series and the series dataframe if expand is not 0,
             otherwise None and the series dataframe.
         """
+        self.logger.info("Starting transcriptome search with semantic expansion...")
+        self.logger.info("search: " + str(search)),
+        self.logger.info("expand: " + str(expand))
         if expand == 0:
             series_df, series_of_interest = self.transcriptome_search(geneset_query, search)
             return None, series_df
@@ -213,6 +219,9 @@ class Query_DB:
             otherwise None and the series dataframe.
 
         """
+        self.logger.info("Starting transcriptome search with transcriptome expansion...")
+        self.logger.info("search: " + str(search))
+        self.logger.info("expand: " + str(expand))  
         if expand == 0:
             series_df, series_of_interest = self.transcriptome_search(geneset_query, search)
             return None, series_df
@@ -234,7 +243,9 @@ class Query_DB:
             tuple or None: A tuple containing the additional series and the search results dataframe.
                            If `expand` is 0, returns None as the additional series.
         """
-        print(text_query)
+        self.logger.info("Starting semantic search with semantic expansion...")
+        self.logger.info("search: " + str(search))  
+        self.logger.info("expand: " + str(expand))
         if expand == 0:
             series_df, series_of_interest = self.semantic_search(text_query, search)
             return None, series_df
@@ -256,6 +267,9 @@ class Query_DB:
             tuple or None: A tuple containing the additional transcriptome series and the search results dataframe.
                            If `expand` is 0, returns `None` as the first element of the tuple.
         """
+        self.logger.info("Starting semantic search with transcriptome expansion...")
+        self.logger.info("search: " + str(search))
+        self.logger.info("expand: " + str(expand))
         if expand == 0:
             series_df, series_of_interest = self.semantic_search(text_query, search)
             return None, series_df
@@ -344,20 +358,24 @@ class Query_DB:
                 results_object.seed_studies = seed_series
                 results_object.expansion_studies = additional_series
 
+        self.logger.info("Completed search step.")
+
 
         if perform_enrichment and self.RNASeqAnalysis is not None:
             if results_object.expansion_studies is not None:
+                self.logger.info("Performing enrichment on expansion studies.")
                 samps = self.metafile[self.metafile["series_id"].isin(results_object.expansion_studies["gse_id"])]
                 enrichment_df = self.RNASeqAnalysis.perform_enrichment_on_samples_batched(samps.index, geneset)
                 res_df = pd.concat([enrichment_df, samps], axis = 1)
                 results_object.samples = res_df
-                self.logger.info("Performed enrichment on studies in expansion step.")
+                self.logger.info("Completed enrichment on studies in expansion step.")
             else:
                 samps = self.metafile[self.metafile["series_id"].isin(results_object.seed_studies["gse_id"])]
+                self.logger.info("No expansion studies found. Performing enrichment on seed studies.")
                 enrichment_df = self.RNASeqAnalysis.perform_enrichment_on_samples_batched(samps.index, geneset)
                 res_df = pd.concat([enrichment_df, samps], axis = 1)
                 results_object.samples = res_df
-                self.logger.info("No expansion studies found. Performed enrichment on seed studies.")
+                self.logger.info("Completed enrichment on seed studies.")
         elif perform_enrichment is False and self.RNASeqAnalysis is not None:
             if results_object.expansion_studies is not None:
                 samps = self.metafile[self.metafile["series_id"].isin(results_object.expansion_studies["gse_id"])]
@@ -375,7 +393,7 @@ class Query_DB:
             
         #additional_series = additional_series.drop(["similarity_score"], axis=1).reset_index(drop=True).drop_duplicates() 
         #seed_series = seed_series.drop_duplicates()
-        self.logger.info("Search completed.")
+        self.logger.info("query result retrieved.")
         return results_object
 
 class Results:
