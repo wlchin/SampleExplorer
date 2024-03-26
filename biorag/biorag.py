@@ -1,7 +1,6 @@
 import pandas as pd
 from tqdm import tqdm
 import anndata as ad
-import numpy as np
 import archs4py as a4
 import os
 import traceback
@@ -12,8 +11,6 @@ from .enrichment import Transcriptome_enrichment
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import warnings
-import logging
-import logging
 import logging
 import time
 warnings.filterwarnings('ignore')
@@ -169,7 +166,19 @@ class Query_DB:
         return additional_series
     
 
-    def transcriptome_search_with_semantic_expansion(self, geneset_query, search = 1000, expand= 5):
+    def transcriptome_search_with_semantic_expansion(self, geneset_query, search=1000, expand=5):
+        """
+        Perform a transcriptome search with semantic expansion.
+
+        Args:
+            geneset_query (str): The query for the geneset.
+            search (int, optional): The number of samples to search. Defaults to 1000.
+            expand (int, optional): The number of additional series to expand the search. Defaults to 5.
+
+        Returns:
+            tuple or None: A tuple containing the additional series and the series dataframe if expand is not 0,
+            otherwise None and the series dataframe.
+        """
         if expand == 0:
             series_df, series_of_interest = self.transcriptome_search(geneset_query, search)
             return None, series_df
@@ -178,7 +187,20 @@ class Query_DB:
             additional_series = self.get_semantic_series_of_relevance_from_series(series_of_interest, expand)
             return additional_series, series_df
 
-    def transcriptome_search_with_transcriptome_expansion(self, geneset_query, search = 1000, expand= 10):
+    def transcriptome_search_with_transcriptome_expansion(self, geneset_query, search=1000, expand=10):
+        """
+        Perform a transcriptome search with transcriptome expansion.
+
+        Args:
+            geneset_query (str): The geneset query to search for.
+            search (int): The number of search results to retrieve. Default is 1000.
+            expand (int): The number of additional series to expand the search. Default is 10.
+
+        Returns:
+            tuple or None: A tuple containing the additional series and the series dataframe if expand is not 0,
+            otherwise None and the series dataframe.
+
+        """
         if expand == 0:
             series_df, series_of_interest = self.transcriptome_search(geneset_query, search)
             return None, series_df
@@ -187,7 +209,19 @@ class Query_DB:
             additional_series = self.get_transcriptome_series_of_relevance_from_series(series_of_interest, expand)
             return additional_series, series_df
 
-    def semantic_search_with_semantic_expansion(self, text_query, search = 50, expand= 5):
+    def semantic_search_with_semantic_expansion(self, text_query, search=50, expand=5):
+        """
+        Perform semantic search with semantic expansion.
+
+        Args:
+            text_query (str): The text query to search for.
+            search (int): The number of search results to retrieve. Default is 50.
+            expand (int): The number of additional series to expand the search results. Default is 5.
+
+        Returns:
+            tuple or None: A tuple containing the additional series and the search results dataframe.
+                           If `expand` is 0, returns None as the additional series.
+        """
         print(text_query)
         if expand == 0:
             series_df, series_of_interest = self.semantic_search(text_query, search)
@@ -197,7 +231,19 @@ class Query_DB:
             additional_series = self.get_semantic_series_of_relevance_from_series(series_of_interest, expand)
             return additional_series, series_df
 
-    def semantic_search_with_transcriptome_expansion(self, text_query, search = 50, expand = 10):
+    def semantic_search_with_transcriptome_expansion(self, text_query, search=50, expand=10):
+        """
+        Performs semantic search with transcriptome expansion.
+
+        Args:
+            text_query (str): The text query to search for.
+            search (int): The number of search results to retrieve.
+            expand (int): The number of additional transcriptome series to expand the search with.
+
+        Returns:
+            tuple or None: A tuple containing the additional transcriptome series and the search results dataframe.
+                           If `expand` is 0, returns `None` as the first element of the tuple.
+        """
         if expand == 0:
             series_df, series_of_interest = self.semantic_search(text_query, search)
             return None, series_df
@@ -206,16 +252,49 @@ class Query_DB:
             additional_series = self.get_transcriptome_series_of_relevance_from_series(series_of_interest, expand)
             return additional_series, series_df
 
-    def search(self, geneset, text_query, search = "semantic", expand = "transcriptome", perform_enrichment = False, n_seed = None, n_expansion = None):
-        """this is the main function
+    def search(self, geneset, text_query, search="semantic", expand="transcriptome", perform_enrichment=False, n_seed=None, n_expansion=None):
         """
+        Perform a search using the specified parameters.
+
+        Args:
+            geneset (list): A list of genes to search for.
+            text_query (str): The text query to search for.
+            search (str, optional): The type of search to perform. Defaults to "semantic".
+            expand (str, optional): The type of expansion to perform. Defaults to "transcriptome".
+            perform_enrichment (bool, optional): Whether to perform enrichment analysis. Defaults to False.
+            n_seed (int, optional): The number of seed studies to include. Defaults to None.
+            n_expansion (int, optional): The number of expansion studies to include. Defaults to None.
+
+        Raises:
+            ValueError: If the gene set is empty or has less than 5 genes.
+            ValueError: If either n_seed or n_expansion is provided without the other.
+
+        Returns:
+            Results: An object containing the search results.
+        """
+        if geneset is None or len(geneset) == 0:
+            raise ValueError("Gene set should not be empty.")
+        
         if geneset is not None and len(geneset) < 5:
-            logging.warning("Gene set should have at least 5 elements.")
+            logging.warning("Gene set should have at least 5 genes.")
         
         if (n_seed is None and n_expansion is not None) or (n_seed is not None and n_expansion is None):
             raise ValueError("Both n_seed and n_expansion must be either None or filled.")
         
         # Rest of the code...
+    def search(self, geneset, text_query, search="semantic", expand="transcriptome", perform_enrichment=False, n_seed=None, n_expansion=None):
+        """this is the main function
+        """
+        if geneset is None or len(geneset) == 0:
+            raise ValueError("Gene set should not be empty.")
+        
+        if geneset is not None and len(geneset) < 5:
+            logging.warning("Gene set should have at least 5 genes.")
+        
+        if (n_seed is None and n_expansion is not None) or (n_seed is not None and n_expansion is None):
+            raise ValueError("Both n_seed and n_expansion must be either None or filled.")
+        
+        # Rest of the code...   # Rest of the code...
 
         results_object = Results(None, None, None) # new results object
 
@@ -276,6 +355,15 @@ class Query_DB:
         return results_object
 
 class Results:
+    """
+    Represents the results of a bioRAG analysis.
+
+    Attributes:
+        seed_studies (DataFrame): The seed studies used in the analysis.
+        expansion_studies (DataFrame): The expansion studies used in the analysis.
+        samples (DataFrame): The samples used in the analysis.
+    """
+
     def __init__(self, seed_df, expansion_df, samples_df):
         self.seed_studies = seed_df
         self.expansion_studies = expansion_df

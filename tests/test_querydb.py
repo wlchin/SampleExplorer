@@ -91,7 +91,7 @@ def test_search_function():
     """
     Test that the search function returns the same as the semantic search function with expansion
     """
-    df = new_query_db.search(test_geneset, "Trans-chromosomal regulation lincRNA", search_n = 5, expand_n = 5)
+    df = new_query_db.search(test_geneset, "Trans-chromosomal regulation lincRNA", n_seed = 5, n_expansion = 5)
     df2, _ = new_query_db.semantic_search_with_transcriptome_expansion("Trans-chromosomal regulation lincRNA", 5,5)
     assert df.expansion_studies.equals(df2)
 
@@ -99,7 +99,7 @@ def test_search_function2():
     """
     Test that the search function returns the same as the semantic search function with expansion
     """
-    df = new_query_db.search(test_geneset, "Trans-chromosomal regulation lincRNA", search = "semantic", expand = "semantic", search_n = 5, expand_n = 5)
+    df = new_query_db.search(test_geneset, "Trans-chromosomal regulation lincRNA", search = "semantic", expand = "semantic", n_seed = 5, n_expansion = 5)
     df2, _ = new_query_db.semantic_search_with_semantic_expansion("Trans-chromosomal regulation lincRNA", 5,5)
     #df2 = df2.drop(["similarity_score"], axis=1).reset_index(drop=True).drop_duplicates() 
     assert df.expansion_studies.equals(df2)
@@ -108,7 +108,7 @@ def test_search_function3():
     """
     Test that the search function returns the same as the semantic search function with expansion
     """
-    df = new_query_db.search(geneset = test_geneset, text_query="Trans-chromosomal regulation lincRNA", search = "transcriptome", expand = "semantic", search_n = 5, expand_n = 5)
+    df = new_query_db.search(geneset = test_geneset, text_query="Trans-chromosomal regulation lincRNA", search = "transcriptome", expand = "semantic", n_seed = 5, n_expansion = 5)
     df2, _ = new_query_db.transcriptome_search_with_semantic_expansion(test_geneset, 5,5)
     #df2 = df2.drop(["similarity_score"], axis=1).reset_index(drop=True).drop_duplicates() 
     assert df.expansion_studies.equals(df2)
@@ -117,7 +117,7 @@ def test_search_function4():
     """
     Test that the search function returns the same as the semantic search function with expansion
     """
-    df = new_query_db.search(geneset = test_geneset, text_query="Trans-chromosomal regulation lincRNA", search = "transcriptome", expand = "transcriptome", search_n = 5, expand_n = 5)
+    df = new_query_db.search(geneset = test_geneset, text_query="Trans-chromosomal regulation lincRNA", search = "transcriptome", expand = "transcriptome", n_seed = 5, n_expansion = 5)
     df2, _ = new_query_db.transcriptome_search_with_transcriptome_expansion(test_geneset, 5,5)
     assert df.expansion_studies.equals(df2)
 
@@ -126,7 +126,7 @@ def test_results_object():
     Test assignment in Results object
     """
 
-    df = new_query_db.search(geneset = test_geneset, text_query="Trans-chromosomal regulation lincRNA", search = "transcriptome", expand = "transcriptome", search_n = 5, expand_n = 5)
+    df = new_query_db.search(geneset = test_geneset, text_query="Trans-chromosomal regulation lincRNA", search = "transcriptome", expand = "transcriptome", n_seed = 5, n_expansion = 5)
     x = Results(df.seed_studies, df.expansion_studies, df.samples)
     
     assert x.seed_studies.equals(df.seed_studies)
@@ -136,11 +136,11 @@ def test_expansion_transcriptome_zero_values():
     """
     res = new_query_db.search(geneset = test_geneset, text_query="Trans-chromosomal regulation lincRNA", \
                           search = "transcriptome", expand = "transcriptome", perform_enrichment=False, \
-                            search_n = 14, expand_n = 0)
+                            n_seed = 14, n_expansion = 0)
     
     res2 = new_query_db.search(geneset = test_geneset, text_query="Trans-chromosomal regulation lincRNA", \
                           search = "transcriptome", expand = "semantic", perform_enrichment=False, \
-                            search_n = 14, expand_n = 0)
+                            n_seed = 14, n_expansion = 0)
     
     assert res.seed_studies.equals(res2.seed_studies)
 
@@ -149,10 +149,10 @@ def test_expansion_semantic_zero_values():
     """
     res = new_query_db.search(geneset = test_geneset, text_query="Trans-chromosomal regulation lincRNA", \
                           search = "semantic", expand = "transcriptome", perform_enrichment=False, \
-                            search_n = 14, expand_n = 0)
+                            n_seed = 14, n_expansion = 0)
     
     res2 = new_query_db.search(geneset = test_geneset, text_query="Trans-chromosomal regulation lincRNA", \
                           search = "semantic", expand = "semantic", perform_enrichment=False, \
-                            search_n = 14, expand_n = 0)
+                            n_seed = 14, n_expansion = 0)
     
     assert res.seed_studies.equals(res2.seed_studies)
