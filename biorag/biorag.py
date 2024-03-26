@@ -13,32 +13,71 @@ from .enrichment import Transcriptome_enrichment
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import warnings
 import logging
+import logging
+import logging
+import time
 warnings.filterwarnings('ignore')
  
+
  
 class Query_DB:
-    def __init__(self, semantic_vector_store, transcriptomic_vector_store, h5file = None):
-        trans_obj = ad.read_h5ad(transcriptomic_vector_store, backed = "r")
-        sem_obj = ad.read_h5ad(semantic_vector_store, backed = "r")
+    def __init__(self, semantic_vector_store, transcriptomic_vector_store, h5file=None, log_level=logging.INFO):
+        logging.basicConfig(filename='log.txt', level=log_level, format='%(asctime)s %(levelname)s %(message)s')
+        logging.info("Loading transcriptomic vector store...")
+        trans_obj = ad.read_h5ad(transcriptomic_vector_store, backed="r")
+        logging.info("Transcriptomic vector store loaded.")
+        
+        logging.info("Loading semantic vector store...")
+        sem_obj = ad.read_h5ad(semantic_vector_store, backed="r")
+        logging.info("Semantic vector store loaded.")
+        
         self.transcriptome_embedding = Transcriptome_embedding(trans_obj.obs, trans_obj.obsm["embedding"])
+        logging.info("Transcriptome embedding initialized.")
         self.rag_embedding = Rag_embedding(sem_obj.obs, sem_obj.X)
-        self.transcriptome_enrichment = Transcriptome_enrichment(trans_obj)
+        logging.info("RAG embedding initialized.")
+        self.transcriptome_enrichment = Transcriptome_enrichment(trans_obj)        
+        logging.info("Transcriptome object initialized.")
+        
         if h5file is not None:
+            logging.info("Loading RNASeqAnalysis object...")
             self.RNASeqAnalysis = RNASeqAnalysis(h5file)
+            logging.info("RNASeqAnalysis object loaded.")
+            
+            logging.info("Processing metadata...")
             self.metafile = self.process_metadata(h5file)
+            logging.info("Metadata processed.")
         else:
             self.RNASeqAnalysis = None
             #self.sample_to_series_map = Sample_to_series_map(h5file, self.rag_embedding)
     
     def process_metadata(self, h5_path):
+        """
+        Process metadata from an HDF5 file.
+
+        Args:
+            h5_path (str): The path to the HDF5 file.
+
+        Returns:
+            pandas.DataFrame: A DataFrame containing processed metadata with columns 'series_id' and 'samples'.
+        """
         x = a4.meta.meta(h5_path, ".*", meta_fields=["series_id"])
         x["samples"] = x.index
         x = x[['series_id', 'samples']].drop_duplicates()
         return x
 
-    def get_top_samples(self, df, n = 1000):
+    def get_top_samples(self, df, n=1000):
+        """
+        Returns a subset of samples from the given DataFrame based on their ranking.
+
+        Parameters:
+        - df (pandas.DataFrame): The DataFrame containing the samples.
+        - n (int): The number of top samples to retrieve. Default is 1000.
+
+        Returns:
+        - pandas.DataFrame: A subset of the original DataFrame containing the top samples.
+        """
         df_meta = self.transcriptome_embedding.embeddings_index.copy()
-        samps = df.iloc[:,1].sort_values(ascending = False).head(n).index.to_list()
+        samps = df.iloc[:, 1].sort_values(ascending=False).head(n).index.to_list()
         series_of_interest = df_meta[df_meta.index.isin(samps)]
         return series_of_interest
 
@@ -93,7 +132,7 @@ class Query_DB:
             additional_series = self.get_semantic_series_of_relevance_from_series(series_of_interest, expand)
             return additional_series, series_df
 
-    def transcriptome_search_with_transcriptome_expansion(self, geneset_query, search = 1000, expand= 5):
+    def transcriptome_search_with_transcriptome_expansion(self, geneset_query, search = 1000, expand= 10):
         if expand == 0:
             series_df, series_of_interest = self.transcriptome_search(geneset_query, search)
             return None, series_df
@@ -112,8 +151,7 @@ class Query_DB:
             additional_series = self.get_semantic_series_of_relevance_from_series(series_of_interest, expand)
             return additional_series, series_df
 
-    def semantic_search_with_transcriptome_expansion(self, text_query, search = 50, expand = 5):
-        print(text_query)
+    def semantic_search_with_transcriptome_expansion(self, text_query, search = 50, expand = 10):
         if expand == 0:
             series_df, series_of_interest = self.semantic_search(text_query, search)
             return None, series_df
@@ -122,9 +160,16 @@ class Query_DB:
             additional_series = self.get_transcriptome_series_of_relevance_from_series(series_of_interest, expand)
             return additional_series, series_df
 
-    def search(self, geneset, text_query, search = "semantic", expand = "transcriptome", perform_enrichment = False):
+    def search(self, geneset, text_query, search = "semantic", expand = "transcriptome", perform_enrichment = False, n_seed = None, n_expansion = None):
         """this is the main function
         """
+        if geneset is not None and len(geneset) < 5:
+            logging.warning("Gene set should have at least 5 elements.")
+        
+        if (n_seed is None and n_expansion is not None) or (n_seed is not None and n_expansion is None):
+            raise ValueError("Both n_seed and n_expansion must be either None or filled.")
+        
+        # Rest of the code...
 
         results_object = Results(None, None, None) # new results object
 
@@ -136,20 +181,32 @@ class Query_DB:
 
         if search == "semantic":
             if expand == "transcriptome":
-                additional_series, seed_series = self.semantic_search_with_transcriptome_expansion(text_query)
+                if n_seed is None and n_expansion is None:
+                    additional_series, seed_series = self.semantic_search_with_transcriptome_expansion(text_query)
+                else:
+                    additional_series, seed_series = self.semantic_search_with_transcriptome_expansion(text_query, search = n_seed, expand = n_expansion)
                 results_object.seed_studies = seed_series
                 results_object.expansion_studies = additional_series
             elif expand == "semantic":
-                additional_series, seed_series = self.semantic_search_with_semantic_expansion(text_query)
+                if n_seed is None and n_expansion is None:
+                    additional_series, seed_series = self.semantic_search_with_semantic_expansion(text_query)
+                else:
+                    additional_series, seed_series = self.semantic_search_with_semantic_expansion(text_query, search = n_seed, expand = n_expansion)
                 results_object.seed_studies = seed_series
                 results_object.expansion_studies = additional_series
         if search == "transcriptome":
             if expand == "transcriptome":
-                additional_series, seed_series = self.transcriptome_search_with_transcriptome_expansion(geneset)
+                if n_seed is None and n_expansion is None:
+                    additional_series, seed_series = self.transcriptome_search_with_transcriptome_expansion(geneset)
+                else:
+                    additional_series, seed_series = self.transcriptome_search_with_transcriptome_expansion(geneset, search = n_seed, expand = n_expansion)
                 results_object.seed_studies = seed_series
                 results_object.expansion_studies = additional_series
             elif expand == "semantic":
-                additional_series, seed_series = self.transcriptome_search_with_semantic_expansion(geneset)
+                if n_seed is None and n_expansion is None:
+                    additional_series, seed_series = self.transcriptome_search_with_semantic_expansion(geneset)
+                else :
+                    additional_series, seed_series = self.transcriptome_search_with_semantic_expansion(geneset, search = n_seed, expand = n_expansion)
                 results_object.seed_studies = seed_series
                 results_object.expansion_studies = additional_series
 
