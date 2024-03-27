@@ -298,34 +298,44 @@ class Query_DB:
         Returns:
             Results: An object containing the search results.
         """
-        if geneset is None or len(geneset) == 0:
-            raise ValueError("Gene set should not be empty.")
-        
-        if geneset is not None and len(geneset) < 5:
-            self.logger.warning("Gene set should have at least 5 genes.")
+        if geneset is None and text_query is None:
+            raise ValueError("At least one of geneset or text_query should not be None.")
         
         if (n_seed is None and n_expansion is not None) or (n_seed is not None and n_expansion is None):
             raise ValueError("Both n_seed and n_expansion must be either None or filled.")
         
         if n_seed == 0:
             raise ValueError("n_seed should not be zero.")
+
+        if geneset is not None:
+            if len(geneset) < 5:
+                self.logger.warning("Gene set should have at least 5 genes.")
         
-        if (self.transcriptome_enrichment.memmap_adata.var["gene"].isin(geneset)).sum() == 0:
-            raise ValueError("No genes from the gene set found in the transcriptome.")
-        
-        if (self.transcriptome_enrichment.memmap_adata.var["gene"].isin(geneset)).sum() < len(geneset):
-            self.logger.warning("Some genes from the gene set were not found in the transcriptome.")
-            missing_genes = set(geneset) - set(self.transcriptome_enrichment.memmap_adata.var["gene"])
-            missing_genes_percentage = (len(missing_genes) / len(geneset)) * 100
-            self.logger.warning(f"Missing genes from geneset in transcriptome: {missing_genes} ({missing_genes_percentage:.2f}% of geneset)")
+            if (self.transcriptome_enrichment.memmap_adata.var["gene"].isin(geneset)).sum() == 0:
+                raise ValueError("No genes from the gene set found in the transcriptome.")
+            
+            if (self.transcriptome_enrichment.memmap_adata.var["gene"].isin(geneset)).sum() < len(geneset):
+                self.logger.warning("Some genes from the gene set were not found in the transcriptome.")
+                missing_genes = set(geneset) - set(self.transcriptome_enrichment.memmap_adata.var["gene"])
+                missing_genes_percentage = (len(missing_genes) / len(geneset)) * 100
+                self.logger.warning(f"Missing genes from geneset in transcriptome: {missing_genes} ({missing_genes_percentage:.2f}% of geneset)")
 
         results_object = Results(None, None, None) # new results object
 
         if text_query is None:
             search = "transcriptome"
+            self.logger.info("Search type set to transcriptome by default.")
+            if geneset is None or len(geneset) == 0:
+                raise ValueError("Gene set should not be empty.")
 
         if geneset is None:
             search = "semantic"
+            self.logger.info("Search type set to semantic by default.")
+            if text_query is None or len(text_query) == 0:
+                raise ValueError("Text query should not be empty.")
+            if perform_enrichment:
+                self.logger.error("Enrichment not performed. No gene set provided.")
+                raise ValueError("Please specify a gene set.")
 
         if search == "semantic":
             if expand == "transcriptome":
