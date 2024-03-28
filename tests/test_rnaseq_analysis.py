@@ -2,7 +2,7 @@
 from biorag.rnaseq_analysis import RNASeqAnalysis
 import pytest
 
-x = RNASeqAnalysis("tests/human_gene_v2.2.h5")
+#x = RNASeqAnalysis("tests/human_gene_v2.2.h5")
 #res = x.perform_enrichment_on_samples_batched(element_list, geneset)
 #adata = x.create_anndata_from_samples(["GSM1000981, GSM1002540","GSM1009637", "GSM1158460"])
 

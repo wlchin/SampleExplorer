@@ -7,7 +7,7 @@ import pytest
 text_query = "Studies that investigate severity of COVID-19 in adults"
 geneset_query = ["ACE2", "TMPRSS2", "IFITM3", "DPP4", "CTSL", "IL6", "TNF", "IFNG", "CCL2", "STAT1"]
 
-query_db_short = Query_DB("tests/test_semantic_db.h5ad", "tests/test_transcriptome_db.h5ad", "tests/human_gene_v2.2.h5")
+query_db_short = Query_DB("tests/test_semantic_db.h5ad", "tests/test_transcriptome_db.h5ad")
 
 #outside
 #query_db_short = Query_DB("bioRAG/tests/test_semantic_db.h5ad", "bioRAG/tests/test_transcriptome_db.h5ad", "bioRAG/tests/human_gene_v2.2.h5")
