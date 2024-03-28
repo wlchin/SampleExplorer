@@ -25,3 +25,7 @@ def test_rag_sem_df_size():
 def test_query_rag():
     df = rag_embedding.query_rag("Trans-chromosomal regulation lincRNA")
     assert df.iloc[0, 1] == "GSE45157"
+
+def test_average_embeddings():
+    res = rag_embedding.get_averages_between_queries("test_query", ["test_query", "test_query"])
+    assert round(res) == 1.0
