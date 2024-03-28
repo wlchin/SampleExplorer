@@ -49,6 +49,7 @@ class Query_DB:
         if h5file is not None:
             self.logger.info("Loading ARCHS4 database object...")
             self.RNASeqAnalysis = RNASeqAnalysis(h5file)
+            self.h5file = h5file    
             self.logger.info("ARCHS4 database object loaded.")
             
             self.logger.info("Creating series to sample mapping...")
@@ -74,6 +75,21 @@ class Query_DB:
         x["samples"] = x.index
         x = x[['series_id', 'samples']].drop_duplicates()
         return x
+
+    def retrieve_sample_metadata_from_h5(self, h5_path, sample_list):
+        """
+        Retrieves sample metadata from an HDF5 file.
+
+        Args:
+            h5_path (str): The path to the HDF5 file.
+            sample_list (list): A list of sample names.
+
+        Returns:
+            dict: A dictionary containing the sample metadata.
+
+        """
+        sample_meta = a4.meta.samples(h5_path, sample_list)
+        return sample_meta
 
     def get_top_samples(self, df, n=1000):
         """
@@ -389,12 +405,12 @@ class Query_DB:
         elif perform_enrichment is False and self.RNASeqAnalysis is not None:
             if results_object.expansion_studies is not None:
                 samps = self.metafile[self.metafile["series_id"].isin(results_object.expansion_studies["gse_id"])]
-                res_df = samps
+                res_df = self.retrieve_sample_metadata_from_h5(self.h5file, samps["samples"])
                 results_object.samples = res_df
                 self.logger.info("Retrieving samples from expansion step. Enrichment not performed.")
             else:
                 samps = self.metafile[self.metafile["series_id"].isin(results_object.seed_studies["gse_id"])]
-                res_df = samps
+                res_df = self.retrieve_sample_metadata_from_h5(self.h5file, samps["samples"])
                 results_object.samples = res_df
                 self.logger.info("Retrieving samples from search step. Enrichment not performed.")
         else:
