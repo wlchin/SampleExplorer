@@ -154,7 +154,7 @@ To further refine the set of samples and studies returned by BioRAG search, ssGS
 
 ## License
 
-Creative Commons Attribution 4.0 International. The Creative Commons Attribution license allows re-distribution and re-use of a licensed work on the condition that the creator is appropriately credited. 
+BioRAG is published under the MIT License.
 
 ## References
 
