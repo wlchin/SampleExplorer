@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "biorag"
-version = "0.1.4"
+version = "0.1.5"
 description = "BioRAG: A tool for textual and gene set search against ARCHS4 data"
 authors = ["wchin <wee.chin@health.wa.gov.au>"]
 readme = "README.md"
@@ -23,6 +23,9 @@ coverage = "^7.4.4"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+biorag = "biorag.cli:main"
 
 [tool.coverage.run]
 omit = [
