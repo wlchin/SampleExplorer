@@ -1,4 +1,4 @@
-# BioRAG [![codecov](https://codecov.io/gh/wlchin/bioRAG/graph/badge.svg?token=9GG94JA003)](https://codecov.io/gh/wlchin/bioRAG) ![workflow](https://github.com/wlchin/bioRAG/actions/workflows/python-package.yml/badge.svg)
+# BioRAG [![codecov](https://codecov.io/gh/wlchin/bioRAG/graph/badge.svg?token=9GG94JA003)](https://codecov.io/gh/wlchin/bioRAG) ![workflow](https://github.com/wlchin/bioRAG/actions/workflows/python-package.yml/badge.svg) ![version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue) ![license](https://img.shields.io/badge/license-MIT-blue)
 
 This is the repository for BioRAG[^1]. BioRAG can identify relevant studies within the ARCHS4 database, using a text-based query or a gene set. 
 
@@ -151,12 +151,13 @@ To further refine the set of samples and studies returned by BioRAG search, ssGS
 
 ```
 
+
 ## License
 
-Creative Commons Attribution 4.0 International. The Creative Commons Attribution license allows re-distribution and re-use of a licensed work on the condition that the creator is appropriately credited. 
+BioRAG is published under the MIT License.
 
 ## References
 
-[^1]: Chin WL, & Lassmann, T. (2024). Language models improve the discovery of public RNA-seq data. *bioRxiv*.
+[^1]: Chin WL, & Lassmann, T. (2024). BioRAG: using large language models to discover relevant transcriptome data. *bioRxiv*.
 [^2]: Lachmann A, Torre D, Keenan AB, Jagodnik KM, Lee HJ, Wang L, Silverstein MC, Ma'ayan A. Massive mining of publicly available RNA-seq data from human and mouse. Nat Commun. 2018 Apr 10;9(1):1366. doi: 10.1038/s41467-018-03751-6. PMID: 29636450; PMCID: PMC5893633.
-[^3]: [AnnData] (https://anndata.readthedocs.io/en/latest/)
+[^3]: [AnnData](https://anndata.readthedocs.io/en/latest/)
