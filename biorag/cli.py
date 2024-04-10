@@ -3,14 +3,15 @@ from .biorag import Query_DB
 import os
 import datetime
 import sys
+import logging
 
 def main():
     parser = argparse.ArgumentParser(description='BioRAG Command Line Interface')
-    parser.add_argument('gene_list', type=str, nargs='?', default=None, help='Path to the gene list text file or comma-separated gene list (e.g. "IRF1,IRF2,IRF3")')
-    parser.add_argument('text_query', type=str, nargs='?', default=None, help='Path to a text file or a string, e.g. "studies with cardiac myocytes"')
-    parser.add_argument('archs4_file', type=str, help='Path to the ARCHS4 hdf5 file')
-    parser.add_argument('transcriptome_db', type=str, help='Path to the transcriptome database')
-    parser.add_argument('vector_db', type=str, help='Path to the vector database')
+    parser.add_argument('--gene_list', type=str, nargs='?', default=None, help='Path to the gene list text file or comma-separated gene list (e.g. "IRF1,IRF2,IRF3")')
+    parser.add_argument('--text_query', type=str, nargs='?', default=None, help='Path to a text file or a string, e.g. "studies with cardiac myocytes"')
+    parser.add_argument('--archs4_file', type=str, help='Path to the ARCHS4 hdf5 file')
+    parser.add_argument('--transcriptome_db', type=str, help='Path to the transcriptome database')
+    parser.add_argument('--semantic_db', type=str, help='Path to the vector database')
     parser.add_argument('--search', type=str, help='Search strategy', default='semantic')
     parser.add_argument('--expand', type=str, help='Expansion strategy', default='transcriptome')
     parser.add_argument('--enrichment', action='store_true', default=False, help='Enrichment parameter, if True, then performs ssGSEA')  # Added the --enrichment argument with default value False
@@ -23,7 +24,7 @@ def main():
     if '--usage' in sys.argv:
         print("=====================================================")
         print("BioRAG Command Line Interface")
-        print("Version 0.1.5")
+        print("Version 0.1.7")
         print("Maintainer: WL Chin (melvin.chin@telethonkids.org.au)")
         print("=====================================================")
         print("")
@@ -32,11 +33,11 @@ def main():
         print("")
         print("Usage on command line:")
         print("----------------------")
-        print("biorag --gene_list IRF1,IRF2,IRF3 --text_query 'studies with cardiac myocytes' --archs4_file ARCHS4.h5 --transcriptome_db transcriptome.h5 --vector_db vector.h5")
+        print("biorag --gene_list IRF1,IRF2,IRF3 --text_query 'studies with cardiac myocytes' --archs4_file ARCHS4.h5 --transcriptome_db transcriptome.h5 --semantic_db vector.h5")
         print("")
         print("Usage using files:")
         print("------------------")
-        print("biorag --gene_list gene_list.txt --text_query text_query.txt --archs4_file ARCHS4.h5 --transcriptome_db transcriptome.h5 --vector_db vector.h5")
+        print("biorag --gene_list gene_list.txt --text_query text_query.txt --archs4_file ARCHS4.h5 --transcriptome_db transcriptome.h5 --semantic_db vector.h5")
         print("")
         print("Notes:")
         print("------")
@@ -74,19 +75,21 @@ def main():
     else:
         query = None
 
-    new_query_db = Query_DB(args.vector_db, args.transcriptome_db, args.archs4_file)
+    new_query_db = Query_DB(args.semantic_db, args.transcriptome_db, args.archs4_file)
     result = new_query_db.search(geneset=gene_list, text_query=query, search=args.search, \
-                                 expand=args.expansion, enrichment=args.enrichment)
+                                 expand=args.expand, perform_enrichment=args.enrichment)
 
     # Create the output folder if it doesn't exist
     output_folder = os.path.join('results', datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
+        logging.info(f"Results folder created: {output_folder}")
 
     # Save the result to CSV files in the output folder
     result.seed_studies.to_csv(os.path.join(output_folder, "relevant_seed_studies.csv"))
     result.expansion_studies.to_csv(os.path.join(output_folder, "relevant_expansion_studies.csv"))
     result.samples.to_csv(os.path.join(output_folder, "relevant_samples.csv"))
+    logging.info(f"Results saved to {output_folder}")
 
 if __name__ == '__main__':
     main()
