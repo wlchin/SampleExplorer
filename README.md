@@ -156,6 +156,10 @@ To further refine the set of samples and studies returned by BioRAG search, ssGS
 
 BioRAG is published under the MIT License.
 
+## Test datasets and continuous integration
+
+The repository includes a [set](https://github.com/wlchin/bioRAG/tree/master/tests) of test data and testing scripts. The testing framework utilizes pytest.  
+
 ## References
 
 [^1]: Chin WL, & Lassmann, T. (2024). BioRAG: using large language models to discover relevant transcriptome data. *bioRxiv*.
