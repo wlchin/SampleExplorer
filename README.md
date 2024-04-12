@@ -33,6 +33,7 @@ These additional files will need to be downloaded. Below is a table containing a
 
 Both the semantic vector stores and the transcriptomic vector stores are AnnData[^3] objects, containing both the embedding matrices and the indices which link each embedding vector to an experiment in the ARCHS4 database. Additionally, the transcriptomic vector store also contains derived count data of "representative transcriptomes" in the ARCHS4 database. 
 
+The worfklow required to create these databases is found in [this](https://github.com/wlchin/BioRAG_database_workflow/) repository.
 
 ## Usage
 
