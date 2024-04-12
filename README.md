@@ -33,6 +33,7 @@ These additional files will need to be downloaded. Below is a table containing a
 
 Both the semantic vector stores and the transcriptomic vector stores are AnnData[^3] objects, containing both the embedding matrices and the indices which link each embedding vector to an experiment in the ARCHS4 database. Additionally, the transcriptomic vector store also contains derived count data of "representative transcriptomes" in the ARCHS4 database. 
 
+The worfklow required to create these databases is found in [this](https://github.com/wlchin/BioRAG_database_workflow/) repository.
 
 ## Usage
 
@@ -155,6 +156,10 @@ To further refine the set of samples and studies returned by BioRAG search, ssGS
 ## License
 
 BioRAG is published under the MIT License.
+
+## Test datasets and continuous integration
+
+The repository includes a [set](https://github.com/wlchin/bioRAG/tree/master/tests) of test data and testing scripts. The testing framework utilizes pytest.  
 
 ## References
 
