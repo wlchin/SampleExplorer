@@ -15,7 +15,7 @@ import logging
 import sys
 warnings.filterwarnings('ignore')
  
-logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
 class Query_DB:
     logger = logging.getLogger(__name__)
@@ -211,6 +211,7 @@ class Query_DB:
             otherwise None and the series dataframe.
         """
         self.logger.info("Starting transcriptome search with semantic expansion...")
+        self.logger.warning("This search strategy has long runtimes.")
         self.logger.info("search: " + str(search)),
         self.logger.info("expand: " + str(expand))
         if expand == 0:
@@ -236,6 +237,7 @@ class Query_DB:
 
         """
         self.logger.info("Starting transcriptome search with transcriptome expansion...")
+        self.logger.warning("This search strategy has long runtimes.")
         self.logger.info("search: " + str(search))
         self.logger.info("expand: " + str(expand))  
         if expand == 0:
