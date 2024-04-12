@@ -19,12 +19,12 @@ def main():
 
     # Add any other command line arguments you need here
 
-    parser.add_argument('--version', action='version', version='%(prog)s 0.1.5')  # Added the --version argument to print the version
+    parser.add_argument('--version', action='version', version='%(prog)s 0.1.8')  # Added the --version argument to print the version
 
     if '--usage' in sys.argv:
         print("=====================================================")
         print("BioRAG Command Line Interface")
-        print("Version 0.1.7")
+        print("Version 0.1.8")
         print("Maintainer: WL Chin (melvin.chin@telethonkids.org.au)")
         print("=====================================================")
         print("")
@@ -44,6 +44,7 @@ def main():
         print("1. The gene names should be in uppercase")
         print("2. When using files, the gene_list.txt should contain a list of gene names (in UPPERCASE), one gene per line.")
         print("3. The file containing the text query should have the query string, which may contain multiple sentences, in plain text format")
+        print("4. To perform enrichment, add the --enrichment flag")
         print("")    
         sys.exit(0)
 
