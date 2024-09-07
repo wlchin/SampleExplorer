@@ -161,6 +161,10 @@ BioRAG is published under the MIT License.
 
 The repository includes a [set](https://github.com/wlchin/bioRAG/tree/master/tests) of test data and testing scripts. The testing framework utilizes pytest.  
 
+## Database creation and benchmarking workflows
+
+The scripts for generating the embedding databases and performing benchmarking are located in the [workflow folder](./workflow/)
+
 ## References
 
 [^1]: Chin WL, & Lassmann, T. (2024). BioRAG: using large language models to discover relevant transcriptome data. *bioRxiv*.
