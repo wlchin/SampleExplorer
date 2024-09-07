@@ -1,0 +1,130 @@
+
+
+rule all:
+    input:
+        "results/semantic_db.h5ad",
+        "results/transcriptomic_db.h5ad"
+
+rule download_gene_file:
+    output:
+        "human_gene_v2.2.h5"
+    shell:
+        "wget -O {output} https://s3.dev.maayanlab.cloud/archs4/files/human_gene_v2.2.h5"
+
+rule process_hdf5_file_for_ids:
+    input:
+        "human_gene_v2.2.h5"
+    output:
+        "results/metadata_geo_human.csv",
+        "results/arch_geo_superseries.csv",
+        "results/arch_geo_nosuperseries.csv",
+        "results/no_superseries_ids_only.csv",
+        "results/superseries_ids_only.csv
+    script:
+        "scripts/extract_ids_from_hdf5.py"
+
+rule download_single_series_from_geo:
+    input:
+        "results/no_superseries_ids_only.csv",
+    output:
+        "single_series/metadata_final.p"
+    script:
+        "scripts/single_series_geo_download.py"
+
+rule download_super_series_from_geo:
+    input:
+        "results/superseries_ids_only.csv",
+    output:
+        "superseries/metadata_final.p"
+    script:
+        "scripts/super_series_geo_download.py"
+
+rule combine_single_series:
+    input:
+        "single_series/metadata_final.p"
+    output:
+        "results/single_series.csv"
+    script:
+        "scripts/combine_singleseries.py"
+
+rule combine_super_series:
+    input:
+        "superseries/metadata_final.p"
+    output:
+        "results/superseries.csv"
+    script:
+        "scripts/combine_superseries.py"
+
+rule preprocess_series_information:
+    input:
+        "results/single_series.csv",
+        "results/superseries.csv"
+    output:
+        "results/full_nosuperseries_with_pmid.csv",
+        "results/full_superseries_with_pmid.csv"
+    script:
+        "scripts/preprocess_series.py"
+
+rule merge_series_information:
+    input:
+        "results/full_nosuperseries_with_pmid.csv",
+        "results/full_superseries_with_pmid.csv"
+    output:
+        "results/RAG.csv"
+    script:
+        "scripts/merge_for_rag.py"
+
+rule create_embedding_and_index:
+    input:
+        "results/RAG.csv"
+    output:
+        "results/rag_index_v2.pkl",
+        "results/rag_embedding_matrix_v2.pkl"
+    script:
+        "scripts/create_rag_binaries.py"
+
+rule create_semantic_h5ad:
+    input:
+        "results/rag_embedding_matrix_v2.pkl",
+        "results/rag_index_v2.pkl"
+    output:
+        "results/semantic_db.h5ad"
+    script:
+        "scripts/create_semantic_h5ad.py"
+
+rule create_aggregated_count_memmap:
+    input:
+        "human_gene_v2.2.h5"
+    output:
+        "results/study_counts.dat",
+        "results/transcription_index_v2.pkl"
+    script:
+        "scripts/create_aggregated_count_memmap.py"
+
+rule jl_transfrom_count_matrix:
+    input:
+        "results/study_counts.dat"
+    output:
+        "results/matrix_v2.pkl
+    script:
+        "scripts/jl_transform.py
+
+rule create_gene_index:
+    input:
+        "human_gene_v2.2.h5"
+    output:
+        "results/genes_v2.p"
+    script:
+        "scripts/create_gene_index.py"
+
+rule create_transcriptomic_db:
+    input:
+        "results/matrix_v2.pkl",
+        "results/transcription_index_v2.pkl"
+        "results/study_counts.dat",
+        "results/genes_v2.p"
+    output:
+        "results/transcriptomic_db.h5ad"
+    script:
+        "scripts/create_transcriptomic_db.py
+
