@@ -35,7 +35,7 @@ class Query_DB:
         self.logger.info("Loading transcriptomic vector store...")
         trans_obj = ad.read_h5ad(transcriptomic_vector_store, backed="r")
         self.transcriptome_search_possible = True
-        self.check_if_sparse_matrix()   
+        self.check_if_sparse_matrix(trans_obj)   
 
         self.logger.info("Transcriptomic vector store loaded.")
         
@@ -67,7 +67,7 @@ class Query_DB:
         self.logger.info("Query_DB object initialized.")
 
     
-    def check_if_sparse_matrix(self):
+    def check_if_sparse_matrix(self, trans_obj):
         """
         Check if the given matrix is a sparse matrix.
 
@@ -78,7 +78,7 @@ class Query_DB:
         bool : True if the matrix is sparse, False otherwise.
         """
 
-        if sp.issparse(self.trans_obj.X):
+        if sp.issparse(trans_obj.X):
             self.transcriptome_search_possible = False
             self.logger.warning("Transcriptomic matrix is sparse. Transcriptome search not possible.")
 
