@@ -150,6 +150,9 @@ To further refine the set of samples and studies returned by SampleExplorer sear
 
 ```
 
+## Optional download - transcriptome embeddings file
+
+For users requiring only the default use case (semantic search followed by transcriptome expansion), an [embeddings-only vector store](https://data.pawsey.org.au/download/RNAseq_AB1_Renca/BioRAG/transcriptomic_db_embedding_only.h5ad) can be used in the place of the transcriptomic vector store above. This embeddings-only file is smaller (1 GB) but does not have the reference transcriptomes described in the sections above. Hence, transcriptome search (using a gene set) as the initial step will not be possible.
 
 ## License
 
