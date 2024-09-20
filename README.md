@@ -18,7 +18,7 @@ SampleExplorer has been tested on python 3.9, 3.10, and 3.11.
 Install SampleExplorer via PyPI with the following command:
 
 ```
-pip install sample_explorer
+pip install sample-explorer
 ```
 
 ### Additional files
