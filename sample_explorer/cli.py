@@ -1,5 +1,5 @@
 import argparse
-from .biorag import Query_DB
+from .sample_explorer import Query_DB
 import os
 import datetime
 import sys
