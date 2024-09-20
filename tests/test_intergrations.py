@@ -1,5 +1,5 @@
 
-from biorag.biorag import Query_DB
+from sample_explorer.sample_explorer import Query_DB
 import pytest
 
 

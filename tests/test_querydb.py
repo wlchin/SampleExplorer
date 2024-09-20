@@ -1,7 +1,7 @@
 
 
-from biorag.biorag import Query_DB
-from biorag.biorag import Results
+from sample_explorer.sample_explorer import Query_DB
+from sample_explorer.sample_explorer import Results
 
 test_geneset =  ["IDI1", "SP100","KLF6", "PLPP1", "NEO1", "TSPAN6"]
 

@@ -1,5 +1,5 @@
 
-from biorag.rnaseq_analysis import RNASeqAnalysis
+from sample_explorer.rnaseq_analysis import RNASeqAnalysis
 import pytest
 
 #x = RNASeqAnalysis("tests/human_gene_v2.2.h5")

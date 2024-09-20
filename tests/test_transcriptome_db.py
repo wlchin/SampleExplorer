@@ -1,6 +1,6 @@
 
 import anndata as ad
-from biorag.biorag import Transcriptome_enrichment
+from sample_explorer.sample_explorer import Transcriptome_enrichment
 
 
 test_geneset =  ["IDI1", "SP100","KLF6", "PLPP1", "NEO1", "TSPAN6"]
