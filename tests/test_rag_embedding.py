@@ -1,7 +1,7 @@
 
 
 
-from sample_explorer import Rag_embedding
+from sample_explorer.rag_embedding import Rag_embedding
 import anndata as ad
 
 x = ad.read_h5ad("tests/test_semantic_db.h5ad")
