@@ -2,7 +2,7 @@
 name = "sample-explorer"
 version = "0.1.9"
 description = "SampleExplorer: A tool for textual and gene set search against ARCHS4 data"
-authors = ["wchin <wee.chin@health.wa.gov.au>"]
+authors = ["wlchin <chalky_peccary_0@proton.me>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
