@@ -1,4 +1,4 @@
-from biorag.enrichment import Transcriptome_enrichment
+from sample_explorer.enrichment import Transcriptome_enrichment
 import anndata as ad
 
 x = ad.read_h5ad("tests/test_transcriptome_db.h5ad", backed = "r")
