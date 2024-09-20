@@ -8,6 +8,7 @@ from .rnaseq_analysis import RNASeqAnalysis
 from .rag_embedding import Rag_embedding
 from .transcriptome_embedding import Transcriptome_embedding
 from .enrichment import Transcriptome_enrichment
+import scipy.sparse as sp
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import warnings
@@ -33,6 +34,9 @@ class Query_DB:
 
         self.logger.info("Loading transcriptomic vector store...")
         trans_obj = ad.read_h5ad(transcriptomic_vector_store, backed="r")
+        self.transcriptome_search_possible = True
+        self.check_if_sparse_matrix()   
+
         self.logger.info("Transcriptomic vector store loaded.")
         
         self.logger.info("Loading semantic vector store...")
@@ -43,7 +47,8 @@ class Query_DB:
         self.logger.info("Transcriptome embedding initialized.")
         self.rag_embedding = Rag_embedding(sem_obj.obs, sem_obj.X)
         self.logger.info("RAG embedding initialized.")
-        self.transcriptome_enrichment = Transcriptome_enrichment(trans_obj)        
+        self.transcriptome_enrichment = Transcriptome_enrichment(trans_obj)     
+        
         self.logger.info("Transcriptome object initialized.")
         
         if h5file is not None:
@@ -60,6 +65,22 @@ class Query_DB:
             self.RNASeqAnalysis = None
         
         self.logger.info("Query_DB object initialized.")
+
+    
+    def check_if_sparse_matrix(self):
+        """
+        Check if the given matrix is a sparse matrix.
+
+        Parameters:
+        matrix : The matrix to check.
+
+        Returns:
+        bool : True if the matrix is sparse, False otherwise.
+        """
+
+        if sp.issparse(self.trans_obj.X):
+            self.transcriptome_search_possible = False
+            self.logger.warning("Transcriptomic matrix is sparse. Transcriptome search not possible.")
 
     def process_metadata(self, h5_path):
         """
@@ -210,6 +231,10 @@ class Query_DB:
             tuple or None: A tuple containing the additional series and the series dataframe if expand is not 0,
             otherwise None and the series dataframe.
         """
+        if self.transcriptome_search_possible is False:
+            # throw an error if the transcriptome is sparse
+            raise RuntimeError("This database cannot be used for search. Download the full database to perform search.")
+
         self.logger.info("Starting transcriptome search with semantic expansion...")
         self.logger.warning("This search strategy has long runtimes.")
         self.logger.info("search: " + str(search)),
@@ -236,6 +261,10 @@ class Query_DB:
             otherwise None and the series dataframe.
 
         """
+        if self.transcriptome_search_possible is False:
+        # throw an error if the transcriptome is sparse
+            raise RuntimeError("This database cannot be used for search. Download the full database to perform search.")
+
         self.logger.info("Starting transcriptome search with transcriptome expansion...")
         self.logger.warning("This search strategy has long runtimes.")
         self.logger.info("search: " + str(search))
