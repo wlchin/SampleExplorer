@@ -15,7 +15,7 @@ This is the repository for SampleExplorer. SampleExplorer can identify relevant 
 
 SampleExplorer has been tested on python 3.9, 3.10, and 3.11. 
 
-Install BioRAG via PyPI with the following command:
+Install SampleExplorer via PyPI with the following command:
 
 ```
 pip install sample_explorer
