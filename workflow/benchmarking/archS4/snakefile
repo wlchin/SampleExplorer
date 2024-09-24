@@ -1,0 +1,25 @@
+
+rule get_arch_samples:
+    input:
+        "data/msigdb.v2023.2.Hs.symbols.gmt",
+        "data/test_set_misgdb.csv"
+    output:
+        "logfiles/arch_api.log"
+    script:
+        "archs4/get_arch_samples.py"
+
+rule calculate_L1_distances:
+    input:
+        "logfiles/arch_api.log"
+    output:
+        "tempfiles/archs4_collected_distances.csv""
+    shell:
+        "archs4/calculate_interpoint_distance_arch.py"
+
+rule calculate_semantic_similarity:
+    input:
+        "tempfiles/arch_int_3/{msigdb_store}"
+    output:
+        "tempfiles/cosine_similarity_arch_queries.csv"
+    script:
+        "archs4/calculate_semantic_similarity.py"

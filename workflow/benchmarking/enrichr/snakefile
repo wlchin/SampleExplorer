@@ -1,0 +1,42 @@
+container: "/data2/Biorag/singularity_container/sample_explorer.sif""
+
+rule get_enrichr_studies_from_api:
+    input:
+        "data/msigdb.v2023.2.Hs.symbols.gmt", 
+        "data/test_set_misgdb.csv"
+    output:
+        "logfiles/enrichr_api.log"
+    script:
+        "enrichr/get_enrichr_studies.py"
+
+rule get_enrichr_studies_metadata_from_geo:
+    input:
+        "logfiles/enrichr_api.log"
+    output:
+        "logfiles/get_metadata_enrichr.log"
+    script:
+        "enrichr/download_enrichr_metadata_from_geo.py"
+
+rule get_enrichment_of_samples_from_enrichr:
+    input:
+        "logfiles/get_metadata_enrichr.log"
+    output:
+        "logfiles/processing_log.txt"
+    script:
+        "enrichr/get_enrichment.py"
+
+rule get_semantic_similarity_of_samples:
+    input:
+        "logfiles/processing_log.txt"
+    output:
+        "results/cosine_similarity_enrichr_queries.csv"
+    script:
+        "enrichr/calculate_semantic_similarity.py"
+
+rule get_interpoint_distance_of_samples:
+    input:
+        "logfiles/processing_log.txt"
+    output:
+        "results_enrichr/collected_distances.csv"
+    script:
+        "enrichr/calculate_interpoint_distance_enrichr.py"
