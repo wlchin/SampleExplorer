@@ -3,7 +3,7 @@ import time
 import traceback
 import gseapy as gp
 from io import StringIO
-from biorag.utils import MsigDB_store
+from sample_explorer.utils import MsigDB_store
 import pandas as pd
 
 

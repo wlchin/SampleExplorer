@@ -20,8 +20,8 @@ def check_folder_existence():
     os.makedirs(TEMP_DIR, exist_ok=True)
 
 def load_rag_data():
-    rag_index = pd.read_pickle(f"{DATA_DIR}/important_data_for_LLM/rag_index_v2.pkl")
-    with open(f"{DATA_DIR}/important_data_for_LLM/rag_embedding_matrix_v2.pkl", "rb") as f:
+    rag_index = pd.read_pickle(f"{DATA_DIR}/rag_index_v2.pkl")
+    with open(f"{DATA_DIR}/rag_embedding_matrix_v2.pkl", "rb") as f:
         rag_embedding_matrix = pickle.load(f)
     return Rag_embedding(rag_index, rag_embedding_matrix)
 

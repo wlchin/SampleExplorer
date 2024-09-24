@@ -1,0 +1,65 @@
+rule get_rag:
+    input:
+        "gene_sets/test_gene_sets.txt",
+        "data/important_data_for_LLM/rag_index_v2.pkl",
+        "data/important_data_for_LLM/rag_embedding_matrix_v2.pkl",
+        "data/msigdb.v2023.2.Hs.symbols.gmt",
+        "data/test_set_misgdb.csv"
+    output:
+        dest_folder = directory("tempfiles/sem_query_rag_df/")
+    script:
+        "sem_query/get_rag.py"
+
+rule get_enrichment_of_samples_sem_only:
+    input:
+
+rule perform_enrichment:
+    input:
+        "gene_sets/test_gene_sets.txt",
+        "data/rag_index_v2.pkl",
+        "data/rag_embedding_matrix_v2.pkl",
+        "data/msigdb.v2023.2.Hs.symbols.gmt",
+        "data/test_set_misgdb.csv",
+        "data/human_gene_v2.2.h5",
+        "data/whole_metadata_human.p"
+    output:
+        dest_folder = directory("tempfiles/sem_only_df/")
+    script:
+        "sem_query/get_sem_only.py"
+
+rule get_enrichment_of_samples_sem_and_sem:
+    input:
+        "gene_sets/test_gene_sets.txt",
+        "data/rag_index_v2.pkl",
+        "data/rag_embedding_matrix_v2.pkl",
+        "data/msigdb.v2023.2.Hs.symbols.gmt",
+        "data/test_set_misgdb.csv",
+        "data/human_gene_v2.2.h5",
+        "data/whole_metadata_human.p"
+    output:
+        dest_folder = directory("tempfiles/sem_and_sem_df/")
+    script:
+        "sem_query/get_sem_seed_sem_expand.py"
+
+rule get_enrichment_of_samples_sem_and_trans:
+    input:
+        "gene_sets/test_gene_sets.txt",
+        "data/rag_index_v2.pkl",
+        "data/rag_embedding_matrix_v2.pkl",
+        "data/msigdb.v2023.2.Hs.symbols.gmt",
+        "data/test_set_misgdb.csv",
+        "data/human_gene_v2.2.h5",
+        "data/whole_metadata_human.p"
+    output:
+        dest_folder = directory("tempfiles/sem_and_trans_df/")
+    script:
+        "sem_query/get_sem_seed_trans_expand.py"
+
+rule get_interpoint_distance:
+    input:
+        "data/transcription_index_v2.p",
+        "data/transcription_embedding_matrix_v2.pkl"
+    output:
+        "tempfiles/sem_and_tran_collected_distances.csv"
+    script:
+        "sem_query/interpoint_distance.py"

@@ -1,5 +1,5 @@
-from biorag.biorag import Rag_embedding, RNASeqAnalysis
-from biorag.utils import MsigDB_store
+from sample_explorer.sample_explorer import Rag_embedding, RNASeqAnalysis
+from sample_explorer.utils import MsigDB_store
 import pandas as pd
 import traceback
 import pandas as pd
@@ -21,8 +21,8 @@ def check_folder_existence():
     os.makedirs(TARGET_DIR, exist_ok=True)
 
 def load_rag_data():
-    rag_index = pd.read_pickle(f"{DATA_DIR}/important_data_for_LLM/rag_index_v2.pkl")
-    with open(f"{DATA_DIR}/important_data_for_LLM/rag_embedding_matrix_v2.pkl", "rb") as f:
+    rag_index = pd.read_pickle(f"{DATA_DIR}/rag_index_v2.pkl")
+    with open(f"{DATA_DIR}/rag_embedding_matrix_v2.pkl", "rb") as f:
         rag_embedding_matrix = pickle.load(f)
     return Rag_embedding(rag_index, rag_embedding_matrix)
 

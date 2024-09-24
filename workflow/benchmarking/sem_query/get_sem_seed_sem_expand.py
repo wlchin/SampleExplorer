@@ -1,5 +1,5 @@
-from biorag.biorag import Rag_embedding, RNASeqAnalysis
-from biorag.utils import MsigDB_store
+from sample_explorer.sample_explorer import Rag_embedding, RNASeqAnalysis
+from sample_explorer.utils import MsigDB_store
 import pandas as pd
 import traceback
 import os

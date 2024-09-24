@@ -1,8 +1,8 @@
 from tqdm import tqdm
 import pandas as pd
-from biorag.utils import MsigDB_store 
-from biorag.biorag import RNASeqAnalysis, Transcriptome_enrichment
-from biorag.enrichment import Transcriptome_enrichment
+from sample_explorer.utils import MsigDB_store 
+from sample_explorer.sample_explorer import RNASeqAnalysis, Transcriptome_enrichment
+from sample_explorer.enrichment import Transcriptome_enrichment
 import traceback
 from typing import List
 import anndata as ad

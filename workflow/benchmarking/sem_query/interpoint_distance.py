@@ -3,10 +3,10 @@ import traceback
 import pandas as pd
 from tqdm import tqdm
 import pickle
-from biorag.biorag import (
+from sample_explorer.sample_explorer import (
     Transcriptome_embedding
 )
-from biorag.utils import MsigDB_store
+from sample_explorer.utils import MsigDB_store
 from typing import List
 
 # Purpose of script
@@ -30,10 +30,10 @@ def load_test_genesets() -> List[str]:
 
 # Load pickle files
 def create_transcriptome_embedding():
-    with open("data/important_data_for_LLM/transcription_index_v2.p", "rb") as f:
+    with open("data/transcription_index_v2.p", "rb") as f:
         transcription_index = pickle.load(f)
 
-    with open("data/important_data_for_LLM/transcription_embedding_matrix_v2.pkl", "rb") as f:
+    with open("data/transcription_embedding_matrix_v2.pkl", "rb") as f:
         transcription_embedding_matrix = pickle.load(f)
 
 # Initialize objects
