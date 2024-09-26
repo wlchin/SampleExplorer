@@ -6,13 +6,13 @@ This is the repository for SampleExplorer. SampleExplorer can identify relevant 
 
 ## Table of Contents
 - [Quickstart](#quickstart)
-- [Installation (Advanced)](#installation)
-- [Usage](#usage)
-- [Modifying searches using different inputs](#modify_inputs)
-- [Modifying searches using different expansion strategies](#modify_expansion)
-- [Optional single sample gene set enrichment analysis](#ssgsea)
-- [Running gene set enrichment using the containerized application](#container)
-- [Optional download - transcriptome embeddings file](#embeddings)
+- [Installation](#installation)
+- [Advanced Usage](#advanced-usage)
+- [Modifying searches using different inputs](#modifying-searches-using-different-inputs)
+- [Modifying searches using different expansion strategies](#modifying-searches-using-different-expansion-strategies)
+- [Optional single sample gene set enrichment analysis](#optional-single-sample-gene-set-enrichment-analysis)
+- [Running gene set enrichment using the containerized application](#running-gene-set-enrichment-using-the-containerized-application)
+- [Downloading the transcriptome embeddings file](#downloading-the-transcriptome-embeddings-file)
 - [License](#license)
 - [References](#references)
 
@@ -33,7 +33,9 @@ http://localhost:8501
 
 **Note:** On first run, the container may take 5-10 minutes to initialize. This includes downloading the BERT model for semantic queries. Please allow the process to complete without interruption. Subsequent starts from the same container will be significantly faster. 
 
-## Installation (Advanced)
+You can perform gene set enrichment on this output as described in the section [below](#running-gene-set-enrichment-using-the-containerized-application)
+
+## Installation
 
 For those wanting to use all functions for this software, please install the python-based application. 
 
@@ -161,7 +163,7 @@ If transcriptome search is performed as the initial step, the count data from "r
 
 The types of searches which can be performed depend on input. For instance,if only a gene set is supplied, the search step defaults to "transcriptome", with the user able to select between "transcriptome" and "semantic" for the expansion step.
 
-## Optional single sample gene set enrichment analysis (ssGSEA)
+## Optional single sample gene set enrichment analysis
 
 To further refine the set of samples and studies returned by SampleExplorer search, ssGSEA can be peformed on all samples returned by the query. Use the "perform_enrichment" parameter to specifiy if ssGSEA should be performed on all samples. If so, the returned dataframe will contain enrichment scores, pvalues and FDRs. The ssGSEA results will be stored as a dataframe in the "samples" attribute in the Results object.
 
@@ -174,7 +176,7 @@ To further refine the set of samples and studies returned by SampleExplorer sear
 
 ```
 
-## Running Gene Set Enrichment Using the Containerized Application
+## Running gene set enrichment using the containerized application
 
 You can use the containerized environment to perform single-sample gene set enrichment analysis (GSEA). When a gene set is specified in the containerized application, it generates a custom Python script tailored for running GSEA. 
 
@@ -192,7 +194,7 @@ To execute gene set enrichment with the prebuilt environment, use Docker with a 
 This command will execute the `gene-set.py` script inside the Docker container, utilizing the local HDF5 database for gene set enrichment analysis. The results will be output as a CSV file in your local directory, containing the single-sample gene set enrichment results.
 
 
-## Optional download - transcriptome embeddings file
+## Downloading the transcriptome embeddings file
 
 For users requiring only the default use case (semantic search followed by transcriptome expansion), an [embeddings-only vector store](https://data.pawsey.org.au/download/RNAseq_AB1_Renca/BioRAG/transcriptomic_db_embedding_only.h5ad) can be used in the place of the transcriptomic vector store above. This embeddings-only file is smaller (1 GB) but does not have the reference transcriptomes described in the sections above. Hence, transcriptome search (using a gene set) as the initial step will not be possible.
 
