@@ -33,7 +33,7 @@ http://localhost:8501
 
 **Note:** On first run, the container may take 5-10 minutes to initialize. This includes downloading the BERT model for semantic queries. Please allow the process to complete without interruption. Subsequent starts from the same container will be significantly faster. 
 
-You can perform gene set enrichment on this output as described in the section [below](#running-gene-set-enrichment-using-the-containerized-application)
+You can perform gene set enrichment on this output as described in the section [below](#running-gene-set-enrichment-using-the-containerized-application).
 
 ## Installation
 
@@ -58,6 +58,8 @@ These additional files will need to be downloaded. Below is a table containing a
 | human_gene_v2.2.h5    | ARCHS4[^1] [hdf5 database](https://s3.dev.maayanlab.cloud/archs4/files/human_gene_v2.2.h5) | 37GB | f546fdecc0ba20bf2a5571628f132ca5 |
 
 Both the semantic vector stores and the transcriptomic vector stores are AnnData[^2] objects, containing both the embedding matrices and the indices which link each embedding vector to an experiment in the ARCHS4 database. Additionally, the transcriptomic vector store also contains derived count data of "representative transcriptomes" in the ARCHS4 database. 
+
+A download [script](https://github.com/wlchin/SampleExplorer/tree/master/download_script) is provided for convenience.
 
 ## Advanced Usage
 
@@ -178,7 +180,7 @@ To further refine the set of samples and studies returned by SampleExplorer sear
 
 ## Running gene set enrichment using the containerized application
 
-You can use the containerized environment to perform single-sample gene set enrichment analysis (GSEA). When a gene set is specified in the containerized application, it generates a custom Python script tailored for running GSEA. 
+You can use the containerized environment to perform single-sample gene set enrichment analysis (ssGSEA). When a gene set is specified in the containerized application together with a natural language query, it generates a custom Python script tailored for running ssGSEA on retrieved samples. 
 
 To execute gene set enrichment with the prebuilt environment, use Docker with a volume mount. This will map the container's working directory to a local folder that contains both the custom script and the ARCHS4 HDF5 database.
 
@@ -196,7 +198,7 @@ This command will execute the `gene-set.py` script inside the Docker container, 
 
 ## Downloading the transcriptome embeddings file
 
-For users requiring only the default use case (semantic search followed by transcriptome expansion), an [embeddings-only vector store](https://data.pawsey.org.au/download/RNAseq_AB1_Renca/BioRAG/transcriptomic_db_embedding_only.h5ad) can be used in the place of the transcriptomic vector store above. This embeddings-only file is smaller (1 GB) but does not have the reference transcriptomes described in the sections above. Hence, transcriptome search (using a gene set) as the initial step will not be possible.
+For users requiring only the default use case (natural language search followed by transcriptome expansion), an [embeddings-only vector store](https://data.pawsey.org.au/download/RNAseq_AB1_Renca/BioRAG/transcriptomic_db_embedding_only.h5ad) can be used in the place of the transcriptomic vector store above. This embeddings-only file is smaller (1 GB) but does not have the reference transcriptomes described in the sections above. Hence, transcriptome search (using a gene set) as the initial step will not be possible.
 
 ## License
 
