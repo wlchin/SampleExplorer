@@ -22,12 +22,13 @@ The easiest way to access the main functions of SampleExplorer is via a containe
 ```shell
 docker run -p 8501:8501 wlc27/streamlit_sample_explorer:0.1.9
 
-Once the container starts, it will expose the Streamlit app on port 8501 of your local machine.
+```
 
-Open your browser and navigate to:
+Once the container starts, it will expose the Streamlit app on port 8501 of your local machine. Open your browser and navigate to:
 
 ```
 http://localhost:8501
+```
 
 **Note:** On first run, the container may take 5-10 minutes to initialize. This includes downloading the BERT model for semantic queries. Please allow the process to complete without interruption. Subsequent starts from the same container will be significantly faster. 
 
