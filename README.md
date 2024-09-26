@@ -5,13 +5,29 @@ This is the repository for SampleExplorer. SampleExplorer can identify relevant 
 ![Image Description](https://github.com/wlchin/bioRAG/blob/master/assets/BioRAG.png)
 
 ## Table of Contents
-
-- [Installation](#installation)
+- [Quickstart](#quickstart)
+- [Installation (Advanced)](#installation)
 - [Usage](#usage)
+- [Modifying searches using different inputs](#modify_inputs)
+- [Modifying searches using different expansion strategies](#modify_expansion)
+- [Optional single sample gene set enrichment analysis](#ssgsea)
+- [Optional download - transcriptome embeddings file](#embeddings)
 - [License](#license)
 - [References](#references)
 
-## Installation
+## Quickstart
+
+The easiest way to access the main functions with SampleExplorer is via a containerised streamlit app. After install Docker, run:
+
+    ```shell
+    docker run -p 8501:8501 wlc27/streamlit_sample_explorer:0.1.9
+
+    ```
+The application will be accessible on port 8501 on your local machine. 
+
+## Installation (Advanced)
+
+For those wanting to use all functions for this software, please install the python-based application. 
 
 SampleExplorer has been tested on python 3.9, 3.10, and 3.11. 
 
@@ -158,13 +174,9 @@ For users requiring only the default use case (semantic search followed by trans
 
 SampleExplorer is published under the MIT License.
 
-## Test datasets and continuous integration
+## Database creation, benchmarking workflows, tests, and and continuous integration
 
-The repository includes a [set](https://github.com/wlchin/SampleExplorer/tree/master/tests) of test data and testing scripts. The testing framework utilizes pytest.  
-
-## Database creation and benchmarking workflows
-
-The scripts for generating the embedding databases and performing benchmarking are located in the [workflow folder](./workflow/)
+The scripts for generating the embedding databases and performing benchmarking are located in the [workflow folder](./workflow/). The repository includes a [set](https://github.com/wlchin/SampleExplorer/tree/master/tests) of test data and testing scripts. The testing framework utilizes pytest.  
 
 ## References
 
