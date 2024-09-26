@@ -17,13 +17,19 @@ This is the repository for SampleExplorer. SampleExplorer can identify relevant 
 
 ## Quickstart
 
-The easiest way to access the main functions with SampleExplorer is via a containerised streamlit app. After install Docker, run:
+The easiest way to access the main functions of SampleExplorer is via a containerized Streamlit app. If you have Docker installed, run:
 
-    ```shell
-    docker run -p 8501:8501 wlc27/streamlit_sample_explorer:0.1.9
+```shell
+docker run -p 8501:8501 wlc27/streamlit_sample_explorer:0.1.9
 
-    ```
-The application will be accessible on port 8501 on your local machine. 
+Once the container starts, it will expose the Streamlit app on port 8501 of your local machine.
+
+Open your browser and navigate to:
+
+```
+http://localhost:8501
+
+**Note:** On first run, the container may take 5-10 minutes to initialize. This includes downloading the BERT model for semantic queries. Please allow the process to complete without interruption. Subsequent starts from the same container will be significantly faster. 
 
 ## Installation (Advanced)
 
