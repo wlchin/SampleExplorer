@@ -11,6 +11,7 @@ This is the repository for SampleExplorer. SampleExplorer can identify relevant 
 - [Modifying searches using different inputs](#modify_inputs)
 - [Modifying searches using different expansion strategies](#modify_expansion)
 - [Optional single sample gene set enrichment analysis](#ssgsea)
+- [Running gene set enrichment using the containerized application](#container)
 - [Optional download - transcriptome embeddings file](#embeddings)
 - [License](#license)
 - [References](#references)
@@ -173,13 +174,23 @@ To further refine the set of samples and studies returned by SampleExplorer sear
 
 ```
 
-## Gene Set enrichment using the containerized enviroment 
+## Running Gene Set Enrichment Using the Containerized Application
 
-It is possible to use the containerised enviroment to run single sample gene set enrichment analysis. If a gene set is specified when a query is run in the containerzed application described above, it will produce a custom python script that allows one to run gene set enrichment. To perform this using the prebuilt enviroment, run docker with a volume mount, mapping the working directory in the container to a local folder containing the custom script and the ARCHS4 hdf5 database. More specifically, if the custom gene-set.py script and the human_gene_v2.2.h5 file are in a local folder, then:
+You can use the containerized environment to perform single-sample gene set enrichment analysis (GSEA). When a gene set is specified in the containerized application, it generates a custom Python script tailored for running GSEA. 
 
-,,,
-docker run -rm -v /path/to/local/folder:/app wlc27/streamlit_sample_explorer:0.1.9 python /app/gene-set.py
-,,,
+To execute gene set enrichment with the prebuilt environment, use Docker with a volume mount. This will map the container's working directory to a local folder that contains both the custom script and the ARCHS4 HDF5 database.
+
+### Steps:
+
+1. Ensure that your custom `gene-set.py` script and the `human_gene_v2.2.h5` database are placed in a local folder.
+2. Run the following Docker command, replacing `/path/to/local/folder` with the actual path to your local folder:
+
+    ```bash
+    docker run --rm -v /path/to/local/folder:/app wlc27/streamlit_sample_explorer:0.1.9 python /app/gene-set.py
+    ```
+
+This command will execute the `gene-set.py` script inside the Docker container, utilizing the local HDF5 database for gene set enrichment analysis. The results will be output as a CSV file in your local directory, containing the single-sample gene set enrichment results.
+
 
 ## Optional download - transcriptome embeddings file
 
