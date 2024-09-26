@@ -56,7 +56,7 @@ These additional files will need to be downloaded. Below is a table containing a
 
 Both the semantic vector stores and the transcriptomic vector stores are AnnData[^2] objects, containing both the embedding matrices and the indices which link each embedding vector to an experiment in the ARCHS4 database. Additionally, the transcriptomic vector store also contains derived count data of "representative transcriptomes" in the ARCHS4 database. 
 
-## Usage
+## Advanced Usage
 
 To load SampleExplorer, follow these steps:
 
@@ -172,6 +172,14 @@ To further refine the set of samples and studies returned by SampleExplorer sear
     results.samples.to_csv("samples_with_ssgsea_results.csv")
 
 ```
+
+## Gene Set enrichment using the containerized enviroment 
+
+It is possible to use the containerised enviroment to run single sample gene set enrichment analysis. If a gene set is specified when a query is run in the containerzed application described above, it will produce a custom python script that allows one to run gene set enrichment. To perform this using the prebuilt enviroment, run docker with a volume mount, mapping the working directory in the container to a local folder containing the custom script and the ARCHS4 hdf5 database. More specifically, if the custom gene-set.py script and the human_gene_v2.2.h5 file are in a local folder, then:
+
+,,,
+docker run -rm -v /path/to/local/folder:/app wlc27/streamlit_sample_explorer:0.1.9 python /app/gene-set.py
+,,,
 
 ## Optional download - transcriptome embeddings file
 
