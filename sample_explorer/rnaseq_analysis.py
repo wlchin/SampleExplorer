@@ -111,8 +111,9 @@ class RNASeqAnalysis:
             pandas.DataFrame: A DataFrame with the enrichment results.
         """
         
-        samples_metadata = self.create_samples_from_series(query_series)
-        df_res = self.perform_enrichment_on_samples_batched(samples_metadata.index, gene_set)
+        samps = self.create_samples_from_series(query_series)
+        samples_metadata = pd.concat(samps) # concatenate dataframes
+        df_res = self.perform_enrichment_on_samples_batched(samples_metadata.index.drop_duplicates(), gene_set)
         return df_res
     
     def create_samples_from_series(self, series):
@@ -123,9 +124,9 @@ class RNASeqAnalysis:
         - series: The series to create samples from.
 
         Returns:
-        - samples: The samples created from the series.
+        - (list of ) sample dataframes: The samples created from the series.
         """
-        samples = a4.meta.series(self.file, series)
+        samples = [a4.meta.series(self.file, i) for i in series]
         return samples
 
     def perform_enrichment_on_samples(self, query_sample_list, gene_set): 
