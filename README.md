@@ -186,14 +186,14 @@ To execute gene set enrichment with the prebuilt environment, use Docker with a 
 
 ### Steps:
 
-1. Ensure that your custom `gene-set.py` script and the `human_gene_v2.2.h5` database are placed in a local folder.
+1. Ensure that your custom `gene_set.py` script and the `human_gene_v2.2.h5` database are placed in a local folder.
 2. Run the following Docker command, replacing `/path/to/local/folder` with the actual path to your local folder:
 
     ```bash
     docker run --rm -v /path/to/local/folder:/app wlc27/streamlit_sample_explorer:0.1.9 python /app/gene_set.py
     ```
 
-This command will execute the `gene-set.py` script inside the Docker container, utilizing the local HDF5 database for gene set enrichment analysis. The results will be output as a CSV file in your local directory, containing the single-sample gene set enrichment results.
+This command will execute the `gene_set.py` script inside the Docker container, utilizing the local HDF5 database for gene set enrichment analysis. The results will be output as a CSV file in your local directory, containing the single-sample gene set enrichment results.
 
 
 ## Downloading the transcriptome embeddings file
