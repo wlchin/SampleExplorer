@@ -57,7 +57,7 @@ These additional files will need to be downloaded. Below is a table containing a
 | transcriptomic_db.h5ad   | [transcriptomic vector store](https://data.pawsey.org.au/download/RNAseq_AB1_Renca/BioRAG/transcriptomic_db.h5ad) | 38GB | d26e564653424ed6e189aea7d0be5d4d |
 | human_gene_v2.2.h5    | ARCHS4[^1] [hdf5 database](https://s3.dev.maayanlab.cloud/archs4/files/human_gene_v2.2.h5) | 37GB | f546fdecc0ba20bf2a5571628f132ca5 |
 
-Both the semantic vector stores and the transcriptomic vector stores are AnnData[^2] objects, containing both the embedding matrices and the indices which link each embedding vector to an experiment in the ARCHS4 database. Additionally, the transcriptomic vector store also contains derived count data of "representative transcriptomes" in the ARCHS4 database. 
+**Note:** Both the semantic vector stores and the transcriptomic vector stores are AnnData[^2] objects, containing both the embedding matrices and the indices which link each embedding vector to an experiment in the ARCHS4 database. Additionally, the transcriptomic vector store also contains derived count data of "representative transcriptomes" in the ARCHS4 database. 
 
 A download [script](https://github.com/wlchin/SampleExplorer/tree/master/download_script) is provided for convenience.
 
