@@ -21,7 +21,7 @@ This is the repository for SampleExplorer. SampleExplorer can identify relevant 
 The easiest way to access the main functions of SampleExplorer is via a containerized Streamlit app. If you have Docker installed, run:
 
 ```shell
-docker run -p 8501:8501 wlc27/streamlit_sample_explorer:0.1.9
+docker run -p 8501:8501 wlc27/streamlit_sample_explorer:0.1.20
 
 ```
 
