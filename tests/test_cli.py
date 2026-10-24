@@ -87,8 +87,17 @@ def test_end_to_end_with_archs4_file(monkeypatch, tmp_path, archs4_h5):
     assert set(samples["series_id"]) == set(expansion["gse_id"])
 
 
-@pytest.mark.xfail(raises=AttributeError, reason="without --archs4_file, Results.samples is None and main() calls None.to_csv")
 def test_end_to_end_without_archs4_file(monkeypatch, tmp_path):
     output_folder = run_cli(monkeypatch, tmp_path, "--gene_list", ",".join(TEST_GENESET), "--text_query", TEXT_QUERY,
                             "--semantic_db", SEMANTIC_DB, "--transcriptome_db", TRANSCRIPTOME_DB)
     assert (output_folder / "relevant_seed_studies.csv").exists()
+    assert (output_folder / "relevant_expansion_studies.csv").exists()
+    assert not (output_folder / "relevant_samples.csv").exists()
+
+
+def test_cli_gene_file_with_blank_lines_and_crlf(monkeypatch, tmp_path, fake_query_db):
+    gene_file = tmp_path / "genes.txt"
+    gene_file.write_bytes(b"IRF1\r\n\r\nIRF2\r\nIRF1\r\n")
+    run_cli(monkeypatch, tmp_path, "--gene_list", str(gene_file), "--text_query", "cardiac myocytes",
+            "--semantic_db", "sem.h5ad", "--transcriptome_db", "trans.h5ad", "--archs4_file", "archs4.h5")
+    assert fake_query_db.instances[0].search_kwargs["geneset"] == ["IRF1", "IRF2", "IRF1"]

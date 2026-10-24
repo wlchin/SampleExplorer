@@ -8,14 +8,6 @@ import sys
 class Rag_embedding:
     def __init__(self, rag_index, rag_embedding_matrix):
         self.logger = logging.getLogger(__name__)
-        H = logging.StreamHandler(sys.stdout)
-        H.setLevel(logging.INFO)
-        H.setFormatter(
-            logging.Formatter(
-                fmt="[%(asctime)s] %(levelname)s: %(message)s",
-                datefmt="%d/%m/%Y ( %H:%M:%S )"
-            ))
-        self.logger.addHandler(H)
 
 
         self.model = SentenceTransformer("paraphrase-MiniLM-L6-v2")

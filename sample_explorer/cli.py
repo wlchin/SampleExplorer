@@ -6,6 +6,7 @@ import sys
 import logging
 
 def main():
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     parser = argparse.ArgumentParser(description='BioRAG Command Line Interface')
     parser.add_argument('--gene_list', type=str, nargs='?', default=None, help='Path to the gene list text file or comma-separated gene list (e.g. "IRF1,IRF2,IRF3")')
     parser.add_argument('--text_query', type=str, nargs='?', default=None, help='Path to a text file or a string, e.g. "studies with cardiac myocytes"')
@@ -59,7 +60,7 @@ def main():
         else:
             # Read the gene list from the file line by line and clean each line
             with open(args.gene_list, 'r') as gene_list_file:
-                gene_list = [line.strip() for line in gene_list_file]
+                gene_list = [line.strip() for line in gene_list_file if line.strip()]
     else:
         gene_list = None
 
@@ -87,9 +88,13 @@ def main():
         logging.info(f"Results folder created: {output_folder}")
 
     # Save the result to CSV files in the output folder
-    result.seed_studies.to_csv(os.path.join(output_folder, "relevant_seed_studies.csv"))
-    result.expansion_studies.to_csv(os.path.join(output_folder, "relevant_expansion_studies.csv"))
-    result.samples.to_csv(os.path.join(output_folder, "relevant_samples.csv"))
+    for table, filename in ((result.seed_studies, "relevant_seed_studies.csv"),
+                            (result.expansion_studies, "relevant_expansion_studies.csv"),
+                            (result.samples, "relevant_samples.csv")):
+        if table is None:
+            logging.info(f"No table to write for {filename}; skipping.")
+            continue
+        table.to_csv(os.path.join(output_folder, filename))
     logging.info(f"Results saved to {output_folder}")
 
 if __name__ == '__main__':

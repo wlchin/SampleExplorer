@@ -10,26 +10,13 @@ from .enrichment import Transcriptome_enrichment
 import scipy.sparse as sp
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
-import warnings
 import logging
-import sys
-warnings.filterwarnings('ignore')
- 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
 class Query_DB:
     logger = logging.getLogger(__name__)
     
     def __init__(self, semantic_vector_store, transcriptomic_vector_store, h5file=None):
         self.logger = logging.getLogger(__name__)
-        H = logging.StreamHandler(sys.stdout)
-        H.setLevel(logging.INFO)
-        H.setFormatter(
-            logging.Formatter(
-                fmt="[%(asctime)s] %(levelname)s: %(message)s",
-                datefmt="%d/%m/%Y ( %H:%M:%S )"
-            ))
-        self.logger.addHandler(H)
 
         self.logger.info("Loading transcriptomic vector store...")
         trans_obj = ad.read_h5ad(transcriptomic_vector_store, backed="r")
@@ -346,6 +333,15 @@ class Query_DB:
         Returns:
             Results: An object containing the search results.
         """
+        for name, strategy in (("search", search), ("expand", expand)):
+            if strategy not in ("semantic", "transcriptome"):
+                raise ValueError(f"{name} must be 'semantic' or 'transcriptome', got {strategy!r}.")
+
+        if isinstance(geneset, str):
+            raise TypeError("geneset must be an iterable of gene names, not a string.")
+        if geneset is not None:
+            geneset = list(dict.fromkeys(geneset))
+
         if geneset is None and text_query is None:
             raise ValueError("At least one of geneset or text_query should not be None.")
         
@@ -424,14 +420,14 @@ class Query_DB:
                 self.logger.info("Performing enrichment on expansion studies.")
                 samps = self.metafile[self.metafile["series_id"].isin(results_object.expansion_studies["gse_id"])]
                 enrichment_df = self.RNASeqAnalysis.perform_enrichment_on_samples_batched(samps.index, geneset)
-                res_df = pd.concat([enrichment_df, samps], axis = 1)
+                res_df = pd.concat([enrichment_df, samps.drop(columns="series_id")], axis = 1)
                 results_object.samples = res_df
                 self.logger.info("Completed enrichment on studies in expansion step.")
             else:
                 samps = self.metafile[self.metafile["series_id"].isin(results_object.seed_studies["gse_id"])]
                 self.logger.info("No expansion studies found. Performing enrichment on seed studies.")
                 enrichment_df = self.RNASeqAnalysis.perform_enrichment_on_samples_batched(samps.index, geneset)
-                res_df = pd.concat([enrichment_df, samps], axis = 1)
+                res_df = pd.concat([enrichment_df, samps.drop(columns="series_id")], axis = 1)
                 results_object.samples = res_df
                 self.logger.info("Completed enrichment on seed studies.")
         elif perform_enrichment is False and self.RNASeqAnalysis is not None:

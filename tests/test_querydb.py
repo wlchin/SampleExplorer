@@ -178,7 +178,6 @@ def test_search_rejects_geneset_without_known_genes():
     with pytest.raises(ValueError):
         new_query_db.search(geneset=["NOT_A_GENE_1", "NOT_A_GENE_2"], text_query="lincRNA", n_seed=5, n_expansion=5)
 
-@pytest.mark.xfail(raises=pytest.fail.Exception, reason="an unknown search or expand strategy silently returns empty Results")
 def test_search_rejects_unknown_strategy():
     with pytest.raises(ValueError):
         new_query_db.search(geneset=test_geneset, text_query="lincRNA", search="Semantic", n_seed=5, n_expansion=5)

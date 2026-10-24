@@ -84,7 +84,6 @@ def test_enrichment_covers_expansion_studies(enriched_search):
     assert (samples["geo_accession"] == samples.index).all()
 
 
-@pytest.mark.xfail(raises=AssertionError, reason="enrichment results and the series-to-sample map are concatenated, duplicating series_id")
 def test_enrichment_columns_are_unique(enriched_search):
     assert enriched_search.samples.columns.is_unique
 
