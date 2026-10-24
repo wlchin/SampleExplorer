@@ -10,6 +10,8 @@ from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
+ENRICHMENT_COLUMNS = ["enrichment_score", "pvals", "p_corrected"]
+
 
 class RNASeqAnalysis:
     def __init__(self, file):
@@ -87,7 +89,11 @@ class RNASeqAnalysis:
 
         Returns:
             pandas.DataFrame: A combined DataFrame containing the results of enrichment analysis for all batches.
+            Empty, with the result and ARCHS4 metadata columns, when ``element_list`` is empty.
         """
+        if len(element_list) == 0:
+            return pd.DataFrame(columns=[*ENRICHMENT_COLUMNS, *archs4.SAMPLE_FIELDS]).astype(
+                dict.fromkeys(ENRICHMENT_COLUMNS, "float64"))
 
         # Calculate the number of batches
         num_batches = (len(element_list) + batch_size - 1) // batch_size

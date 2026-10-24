@@ -87,8 +87,8 @@ def test_batched_covers_all_samples(enrichment, enrichment_batched):
     assert enrichment_batched.columns.tolist() == enrichment.columns.tolist()
 
 
-@pytest.mark.xfail(raises=AssertionError, reason="decoupler drops genes that are zero across the whole batch, so n_up (5% of genes) "
-                          "and tie-breaking depend on which samples share a batch")
+@pytest.mark.xfail(raises=AssertionError, reason="the package's ORA (sample_explorer.ora) drops genes that are zero across "
+                          "the whole batch, so n_up (5% of genes) and tie-breaking depend on which samples share a batch")
 def test_scores_do_not_depend_on_batch_composition(enrichment, enrichment_batched):
     cols = ["enrichment_score", "pvals"]
     np.testing.assert_allclose(enrichment_batched.loc[SAMPLES, cols].to_numpy(), enrichment.loc[SAMPLES, cols].to_numpy())
@@ -105,3 +105,10 @@ def test_perform_enrichment_on_series(rnaseq):
     assert set(res["series_id"]) == {"GSE29282", "GSE43801"}
     assert res.index.is_unique
     assert len(res) == 3
+
+
+def test_batched_enrichment_of_no_samples_is_empty(rnaseq, enrichment):
+    for empty in ([], pd.Index([])):
+        res = rnaseq.perform_enrichment_on_samples_batched(empty, TEST_GENESET)
+        assert res.empty
+        assert res.columns.tolist() == enrichment.columns.tolist()

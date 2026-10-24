@@ -2,7 +2,12 @@
 End-to-end tests of Query_DB.search on the fixture stores, without and with an
 ARCHS4 file (the miniature file built in tests/common.py).
 """
+import logging
+
+import pandas as pd
 import pytest
+
+from sample_explorer.archs4 import SAMPLE_FIELDS
 
 text_query = "Studies that investigate severity of COVID-19 in adults"
 # only IFNG, CCL2 and STAT1 are in the fixture stores
@@ -78,9 +83,7 @@ def test_enrichment_adds_statistics(enriched_search):
 
 def test_enrichment_covers_expansion_studies(enriched_search):
     samples = enriched_search.samples
-    # take the first series_id column (see test_enrichment_columns_are_unique)
-    series = samples.loc[:, samples.columns == "series_id"].iloc[:, 0]
-    assert set(series) == set(enriched_search.expansion_studies["gse_id"])
+    assert set(samples["series_id"]) == set(enriched_search.expansion_studies["gse_id"])
     assert (samples["geo_accession"] == samples.index).all()
 
 
@@ -99,3 +102,37 @@ def test_metadata_only_without_enrichment(metadata_search):
 def test_sample_metadata_case(metadata_search):
     # the ARCHS4 reader returns sample metadata as stored (0.2.x upper-cased it)
     assert metadata_search.samples["title"].str.startswith("Sample GSM").all()
+
+
+def test_samples_tables_have_unnamed_index(enriched_search, metadata_search, tmp_path):
+    assert enriched_search.samples.index.name is None
+    assert metadata_search.samples.index.name is None
+    metadata_search.samples.to_csv(tmp_path / "samples.csv")
+    assert (tmp_path / "samples.csv").read_text().startswith(",geo_accession,")
+
+
+@pytest.fixture
+def studies_without_archs4_samples(query_db_archs4, monkeypatch):
+    """Make the search select a study that has no samples in the ARCHS4 file."""
+    studies = pd.DataFrame({"gse_id": ["GSE_NOT_IN_ARCHS4"]})
+    monkeypatch.setattr(query_db_archs4, "transcriptome_search_with_transcriptome_expansion",
+                        lambda geneset_query, search=1000, expand=10: (studies, studies))
+    return query_db_archs4
+
+
+def test_enrichment_without_archs4_samples_is_empty(enriched_search, studies_without_archs4_samples, caplog):
+    with caplog.at_level(logging.WARNING):
+        samples = studies_without_archs4_samples.search(geneset=geneset_query, text_query=None, n_seed=20,
+                                                        n_expansion=1, perform_enrichment=True).samples
+    assert samples.empty
+    assert samples.columns.tolist() == enriched_search.samples.columns.tolist()
+    assert "no samples in the ARCHS4 file" in caplog.text
+
+
+def test_metadata_only_without_archs4_samples_is_empty(studies_without_archs4_samples, caplog):
+    with caplog.at_level(logging.WARNING):
+        samples = studies_without_archs4_samples.search(geneset=geneset_query, text_query=None, n_seed=20,
+                                                        n_expansion=1, perform_enrichment=False).samples
+    assert samples.shape == (0, len(SAMPLE_FIELDS))
+    assert samples.columns.tolist() == list(SAMPLE_FIELDS)
+    assert "no samples in the ARCHS4 file" in caplog.text

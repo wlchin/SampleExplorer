@@ -92,11 +92,19 @@ class Query_DB:
             sample_list (list): A list of sample names.
 
         Returns:
-            dict: A dictionary containing the sample metadata.
+            pandas.DataFrame: The sample metadata, indexed by sample ID (index unnamed).
 
         """
         sample_meta = archs4.read_sample_metadata(h5_path, sample_list)
-        return sample_meta
+        return sample_meta.rename_axis(None)
+
+    def _samples_of_studies(self, studies):
+        """Rows of the series-to-sample map for the given studies; warns when there are none."""
+        samps = self.metafile[self.metafile["series_id"].isin(studies["gse_id"])]
+        if samps.empty:
+            self.logger.warning("The %d selected studies have no samples in the ARCHS4 file, so the samples table is empty.",
+                                studies["gse_id"].nunique())
+        return samps
 
     def get_top_samples(self, df, n=1000):
         """
@@ -418,13 +426,13 @@ class Query_DB:
         if perform_enrichment and self.RNASeqAnalysis is not None:
             if results_object.expansion_studies is not None:
                 self.logger.info("Performing enrichment on expansion studies.")
-                samps = self.metafile[self.metafile["series_id"].isin(results_object.expansion_studies["gse_id"])]
+                samps = self._samples_of_studies(results_object.expansion_studies)
                 enrichment_df = self.RNASeqAnalysis.perform_enrichment_on_samples_batched(samps.index, geneset)
                 res_df = pd.concat([enrichment_df, samps.drop(columns="series_id")], axis = 1)
                 results_object.samples = res_df
                 self.logger.info("Completed enrichment on studies in expansion step.")
             else:
-                samps = self.metafile[self.metafile["series_id"].isin(results_object.seed_studies["gse_id"])]
+                samps = self._samples_of_studies(results_object.seed_studies)
                 self.logger.info("No expansion studies found. Performing enrichment on seed studies.")
                 enrichment_df = self.RNASeqAnalysis.perform_enrichment_on_samples_batched(samps.index, geneset)
                 res_df = pd.concat([enrichment_df, samps.drop(columns="series_id")], axis = 1)
@@ -432,12 +440,12 @@ class Query_DB:
                 self.logger.info("Completed enrichment on seed studies.")
         elif perform_enrichment is False and self.RNASeqAnalysis is not None:
             if results_object.expansion_studies is not None:
-                samps = self.metafile[self.metafile["series_id"].isin(results_object.expansion_studies["gse_id"])]
+                samps = self._samples_of_studies(results_object.expansion_studies)
                 res_df = self.retrieve_sample_metadata_from_h5(self.h5file, samps["samples"])
                 results_object.samples = res_df
                 self.logger.info("Retrieving samples from expansion step. Enrichment not performed.")
             else:
-                samps = self.metafile[self.metafile["series_id"].isin(results_object.seed_studies["gse_id"])]
+                samps = self._samples_of_studies(results_object.seed_studies)
                 res_df = self.retrieve_sample_metadata_from_h5(self.h5file, samps["samples"])
                 results_object.samples = res_df
                 self.logger.info("Retrieving samples from search step. Enrichment not performed.")
