@@ -42,6 +42,9 @@ class RNASeqAnalysis:
 
         Returns:
             AnnData: An AnnData object containing the counts and metadata for the samples.
+
+        Note: reading 500 or more samples uses worker processes, so a script calling this
+        must put its code under `if __name__ == "__main__":`.
         """
         samples = list(samples)
         sample_counts = archs4.read_counts(self.file, samples)

@@ -7,6 +7,7 @@ import multiprocessing as mp
 import os
 from collections.abc import Iterable
 from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures.process import BrokenProcessPool
 from multiprocessing import shared_memory
 
 import h5py
@@ -99,8 +100,15 @@ def _read_parallel(path, pos: np.ndarray, n_genes: int, workers: int) -> np.ndar
         bounds = np.linspace(0, len(pos), workers + 1).astype(int)
         jobs = [(path, pos[a:b], shm.name, shape, int(a)) for a, b in zip(bounds[:-1], bounds[1:]) if b > a]
         # spawn: safe with threaded libraries loaded; callers need an `if __name__ == "__main__":` guard
-        with ProcessPoolExecutor(len(jobs), mp_context=mp.get_context("spawn")) as pool:
-            list(pool.map(_worker, jobs))
+        try:
+            with ProcessPoolExecutor(len(jobs), mp_context=mp.get_context("spawn")) as pool:
+                list(pool.map(_worker, jobs))
+        except BrokenProcessPool as e:
+            raise RuntimeError(
+                "Reading 500 or more ARCHS4 samples uses worker processes, and they failed to start. "
+                'A script calling SampleExplorer must put its code under `if __name__ == "__main__":` '
+                "(see the Advanced Usage section of the README)."
+            ) from e
         return np.ndarray(shape, dtype=np.uint32, buffer=shm.buf).copy()
     finally:
         shm.close()

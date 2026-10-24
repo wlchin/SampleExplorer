@@ -97,6 +97,13 @@ To load SampleExplorer, follow these steps:
 
     ```
 
+    **Note:** Reading 500 or more samples from the ARCHS4 file uses worker processes. When calling SampleExplorer from a script, put your code under a main guard:
+
+    ```python
+    if __name__ == "__main__":
+        result = new_query_db.search(geneset = geneset_query, text_query = text_query)
+    ```
+
 4. The output is a Results object, which is composed of three pandas dataframes, which can be accessed via dot notation. 
 - The "seed_studies" variable holds a dataframe containing study metadata from the search step. 
 - The "expansion_studies" holds a dataframe of studies from the expansion step, 

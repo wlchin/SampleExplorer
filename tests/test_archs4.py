@@ -76,3 +76,17 @@ def test_parallel_read_matches_serial(archs4_h5, monkeypatch):
     monkeypatch.setattr("sample_explorer.archs4._PARALLEL_MIN_SAMPLES", 1)
     parallel = read_counts(archs4_h5, ids)
     pd.testing.assert_frame_equal(serial, parallel)
+
+
+def test_broken_pool_raises_clear_error(archs4_h5, monkeypatch):
+    from concurrent.futures.process import BrokenProcessPool
+
+    class BrokenPool:
+        def __init__(self, *args, **kwargs):
+            raise BrokenProcessPool("boom")
+
+    monkeypatch.setattr("sample_explorer.archs4._PARALLEL_MIN_SAMPLES", 1)
+    monkeypatch.setattr("sample_explorer.archs4.ProcessPoolExecutor", BrokenPool)
+    with pytest.raises(RuntimeError, match="__main__") as excinfo:
+        read_counts(archs4_h5, ["GSM1000981", "GSM1000984"])
+    assert isinstance(excinfo.value.__cause__, BrokenProcessPool)
