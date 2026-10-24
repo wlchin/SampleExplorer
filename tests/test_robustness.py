@@ -51,9 +51,11 @@ def test_text_lookup_unknown_series_returns_none(query_db):
 
 
 def test_top_samples_ties_keep_store_order(query_db):
-    index = query_db.transcriptome_embedding.embeddings_index.index[:5]
+    # pandas' default quicksort keeps the order of up to 16 tied rows, so it takes more ties
+    # than that for this test to fail under an unstable sort
+    index = query_db.transcriptome_embedding.embeddings_index.index[:50]
     ties = pd.DataFrame({"pvals": 1.0, "estimate": 0.0}, index=index)
-    assert query_db.get_top_samples(ties, n=2).index.tolist() == index[:2].tolist()
+    assert query_db.get_top_samples(ties, n=25).index.tolist() == index[:25].tolist()
 
 
 def _seed_studies(query_db, geneset):

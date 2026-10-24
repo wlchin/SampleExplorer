@@ -64,11 +64,12 @@ def main():
     if args.gene_list is not None:
         # Check if gene_list is a file or a comma-separated string
         if ',' in args.gene_list:
-            # Split the comma-separated string into a list
-            gene_list = args.gene_list.split(',')
+            # Split the comma-separated string into a list, dropping spaces and empty entries
+            gene_list = [gene.strip() for gene in args.gene_list.split(',') if gene.strip()]
         else:
             # Read the gene list from the file line by line and clean each line
-            with open(args.gene_list, 'r') as gene_list_file:
+            # (utf-8-sig drops the byte order mark Windows editors may add)
+            with open(args.gene_list, 'r', encoding='utf-8-sig') as gene_list_file:
                 gene_list = [line.strip() for line in gene_list_file if line.strip()]
     else:
         gene_list = None
@@ -78,7 +79,7 @@ def main():
         # Check if text_query is a file or a string
         if args.text_query.endswith('.txt'):
             # Read the query from the file
-            with open(args.text_query, 'r') as query_file:
+            with open(args.text_query, 'r', encoding='utf-8-sig') as query_file:
                 query = query_file.read()
         else:
             # Use the query as is

@@ -52,16 +52,18 @@ class Transcriptome_enrichment:
     
     def run_decouplr_on_memmaped_adata_with_samples(self, genelist, samples_list):
         """
-        Runs the decouplr algorithm on a memmaped AnnData object with a specified list of samples.
+        Runs over-representation analysis (ORA, sample_explorer.ora) on a memmaped AnnData object
+        for a specified list of samples. The method keeps its historical name.
 
         Args:
-            genelist (dict or list): The gene list to use for the decouplr algorithm. It can be either a dictionary
-                representing a geneset or a list of genes.
+            genelist (dict or list): The gene set(s) to test. It can be either a dictionary mapping
+                gene set names to genes, or a list of genes.
             samples_list (list): The list of sample names to include in the analysis.
 
         Returns:
-            pandas.DataFrame: A DataFrame containing the results of the decouplr algorithm, including the p-values,
-            estimates, and corrected p-values (if applicable).
+            pandas.DataFrame: For one gene set, a DataFrame with the ORA p-values ("pvals"), scores
+            ("estimate", -log10 p) and BH-corrected p-values ("p_corrected"). For several gene sets,
+            the (pvals, scores) DataFrames from the ORA.
         """
         if isinstance(genelist, dict):
             gene_sets = genelist

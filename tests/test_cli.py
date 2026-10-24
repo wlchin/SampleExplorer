@@ -55,6 +55,25 @@ def test_comma_separated_gene_list_and_text(monkeypatch, tmp_path, fake_query_db
                                 "search": "semantic", "expand": "transcriptome", "perform_enrichment": False}
 
 
+def test_comma_separated_gene_list_with_spaces(monkeypatch, tmp_path, fake_query_db):
+    run_cli(monkeypatch, tmp_path, "--gene_list", "IRF1, IRF2", "--text_query", "x")
+    assert fake_query_db.instances[0].search_kwargs["geneset"] == ["IRF1", "IRF2"]
+
+
+def test_comma_separated_gene_list_drops_empty_entries(monkeypatch, tmp_path, fake_query_db):
+    run_cli(monkeypatch, tmp_path, "--gene_list", " IRF1 ,,IRF2, ", "--text_query", "x")
+    assert fake_query_db.instances[0].search_kwargs["geneset"] == ["IRF1", "IRF2"]
+
+
+def test_gene_list_and_query_files_with_byte_order_mark(monkeypatch, tmp_path, fake_query_db):
+    (tmp_path / "genes.txt").write_bytes("﻿IRF1\r\nIRF2\r\n".encode("utf-8"))
+    (tmp_path / "query.txt").write_bytes("﻿cardiac myocytes".encode("utf-8"))
+    run_cli(monkeypatch, tmp_path, "--gene_list", "genes.txt", "--text_query", "query.txt")
+    kwargs = fake_query_db.instances[0].search_kwargs
+    assert kwargs["geneset"] == ["IRF1", "IRF2"]
+    assert kwargs["text_query"] == "cardiac myocytes"
+
+
 def test_gene_list_and_text_query_files(monkeypatch, tmp_path, fake_query_db):
     (tmp_path / "genes.txt").write_text("IRF1\nIRF2 \n")
     (tmp_path / "query.txt").write_text("studies with cardiac myocytes\n")
