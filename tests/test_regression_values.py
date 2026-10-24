@@ -1,12 +1,14 @@
 """
 Regression values for the numerical core: ORA (sample_explorer.ora), transcriptome
-and semantic similarity (scikit-learn, sentence-transformers) and the search ranking.
+and semantic similarity (cosine similarity, MiniLM ONNX encoder) and the search ranking.
 
 The ORA values are decoupler 1.6's, which the package reproduces exactly. They were
-captured on 2026-10-24; the other values with the uv.lock environment (pandas 3.1.0,
-numpy 2.5.4, anndata 0.13.4, sentence-transformers 6.2.0, torch 2.14.1,
-scikit-learn 1.9.1). A failure after a dependency upgrade means search results
-changed; decide whether the change is acceptable before updating the expected values.
+captured on 2026-10-24. The semantic and transcriptome similarity values were captured
+with the uv.lock environment of that date, using sentence-transformers 6.2.0, torch
+2.14.1 and scikit-learn 1.9.1 (pandas 3.1.0, numpy 2.5.4, anndata 0.13.4); the package
+now reproduces them with the ONNX MiniLM encoder and numpy. A failure after a dependency
+upgrade means search results changed; decide whether the change is acceptable before
+updating the expected values.
 
 decoupler 2.3 was briefly used and differed from 1.6: its test is two-sided, and it
 breaks ties between genes at the top-5% cutoff differently, which changed the p-value

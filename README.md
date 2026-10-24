@@ -10,7 +10,7 @@ This is the repository for SampleExplorer. SampleExplorer can identify relevant 
 - [Advanced Usage](#advanced-usage)
 - [Modifying searches using different inputs](#modifying-searches-using-different-inputs)
 - [Modifying searches using different expansion strategies](#modifying-searches-using-different-expansion-strategies)
-- [Optional single sample gene set enrichment analysis](#optional-single-sample-gene-set-enrichment-analysis)
+- [Optional over-representation analysis (ORA)](#optional-over-representation-analysis-ora)
 - [Running gene set enrichment using the containerized application](#running-gene-set-enrichment-using-the-containerized-application)
 - [Downloading the transcriptome embeddings file](#downloading-the-transcriptome-embeddings-file)
 - [License](#license)
@@ -54,6 +54,8 @@ git clone https://github.com/wlchin/SampleExplorer.git
 cd SampleExplorer
 uv sync
 ```
+
+The MiniLM model used for semantic search runs with ONNX Runtime, so PyTorch is not required.
 
 `uv sync` creates a virtual environment in `.venv` with the exact dependency versions recorded in `uv.lock`. Run commands inside it with `uv run`, for example `uv run python my_script.py`. The command line interface is installed as `biorag`; run `biorag --usage` (or `uv run biorag --usage`) for examples.
 
@@ -154,7 +156,7 @@ By default, SampleExplorer will perform semantic search, followed by transcripto
 
 The "search" and "expand" parameters accept either "transcriptome" or "semantic" as options.
 
-If transcriptome search is performed as the initial step, the count data from "representative transcriptomes" in the transcriptome vector store is used to search for enriched samples, using ssGSEA (single sample gene set enrichment analysis) to rank the most relevant samples. In semantic search, SampleExplorer retrieves the most semantically similar studies to the text query, using cosine distance as the metric.
+If transcriptome search is performed as the initial step, the count data from "representative transcriptomes" in the transcriptome vector store is used to search for enriched samples, using over-representation analysis (ORA) of each sample's top 5% most expressed genes to rank the most relevant samples. In semantic search, SampleExplorer retrieves the most semantically similar studies to the text query, using cosine distance as the metric.
 
 1. Example 1 - perform semantic search, followed by transcriptome expansion.
 
@@ -182,22 +184,22 @@ If transcriptome search is performed as the initial step, the count data from "r
 
 The types of searches which can be performed depend on input. For instance, if only a gene set is supplied, the search step defaults to "transcriptome", with the user able to select between "transcriptome" and "semantic" for the expansion step.
 
-## Optional single sample gene set enrichment analysis
+## Optional over-representation analysis (ORA)
 
-To further refine the set of samples and studies returned by SampleExplorer search, ssGSEA can be performed on all samples returned by the query. Use the "perform_enrichment" parameter to specify if ssGSEA should be performed on all samples. Enrichment requires a gene set and the ARCHS4 HDF5 database. If so, the returned dataframe will contain enrichment scores, pvalues and FDRs. The ssGSEA results will be stored as a dataframe in the "samples" attribute in the Results object.
+To further refine the set of samples and studies returned by SampleExplorer search, over-representation analysis (ORA) of each sample's top 5% most expressed genes can be performed on all samples returned by the query. Use the "perform_enrichment" parameter to specify if ORA should be performed on all samples. Enrichment requires a gene set and the ARCHS4 HDF5 database. If so, the returned dataframe will contain enrichment scores, pvalues and FDRs. The ORA results will be stored as a dataframe in the "samples" attribute in the Results object.
 
 ```python
 
     result = new_query_db.search(text_query = text_query, geneset = geneset_query, search = "semantic", expand = "semantic", perform_enrichment = True)
 
     # save enrichment results from the sample dataframe
-    result.samples.to_csv("samples_with_ssgsea_results.csv")
+    result.samples.to_csv("samples_with_ora_results.csv")
 
 ```
 
 ## Running gene set enrichment using the containerized application
 
-You can use the containerized environment to perform single-sample gene set enrichment analysis (ssGSEA). When a gene set is specified in the containerized application together with a natural language query, it generates a custom Python script tailored for running ssGSEA on retrieved samples. 
+You can use the containerized environment to perform over-representation analysis (ORA) of each sample's top 5% most expressed genes. When a gene set is specified in the containerized application together with a natural language query, it generates a custom Python script tailored for running ORA on retrieved samples. 
 
 To execute gene set enrichment with the prebuilt environment, use Docker with a volume mount. This will map the container's working directory to a local folder that contains both the custom script and the ARCHS4 HDF5 database.
 
@@ -210,7 +212,7 @@ To execute gene set enrichment with the prebuilt environment, use Docker with a 
     docker run --rm -v /path/to/local/folder:/app wlc27/streamlit_sample_explorer:0.1.9 python /app/gene_set.py
     ```
 
-This command will execute the `gene_set.py` script inside the Docker container, utilizing the local HDF5 database for gene set enrichment analysis. The results will be output as a CSV file in your local directory, containing the single-sample gene set enrichment results.
+This command will execute the `gene_set.py` script inside the Docker container, utilizing the local HDF5 database for gene set enrichment analysis. The results will be output as a CSV file in your local directory, containing the ORA results.
 
 
 ## Downloading the transcriptome embeddings file
@@ -230,7 +232,7 @@ uv sync
 uv run pytest
 ```
 
-The first run downloads the sentence-transformers model used for semantic search. Continuous integration runs the tests on Python 3.12, 3.13, and 3.14 with the locked dependencies in `uv.lock`.
+The first run downloads the MiniLM ONNX model used for semantic search from Hugging Face. Continuous integration runs the tests on Python 3.12, 3.13, and 3.14 with the locked dependencies in `uv.lock`.
 
 ## References
 

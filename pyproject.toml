@@ -1,6 +1,6 @@
 [project]
 name = "sample-explorer"
-version = "0.1.9"
+version = "0.2.0"
 description = "SampleExplorer: A tool for textual and gene set search against ARCHS4 data"
 authors = [{ name = "wlchin", email = "chalky_peccary_0@proton.me" }]
 readme = "README.md"

@@ -101,3 +101,11 @@ def test_cli_gene_file_with_blank_lines_and_crlf(monkeypatch, tmp_path, fake_que
     run_cli(monkeypatch, tmp_path, "--gene_list", str(gene_file), "--text_query", "cardiac myocytes",
             "--semantic_db", "sem.h5ad", "--transcriptome_db", "trans.h5ad", "--archs4_file", "archs4.h5")
     assert fake_query_db.instances[0].search_kwargs["geneset"] == ["IRF1", "IRF2", "IRF1"]
+
+
+def test_version_matches_package(monkeypatch, capsys):
+    monkeypatch.setattr(sys, "argv", ["biorag", "--version"])
+    with pytest.raises(SystemExit) as exit_info:
+        cli.main()
+    assert exit_info.value.code == 0
+    assert "0.2.0" in capsys.readouterr().out

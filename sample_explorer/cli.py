@@ -4,6 +4,7 @@ import os
 import datetime
 import sys
 import logging
+from importlib.metadata import version as package_version
 
 def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -15,17 +16,17 @@ def main():
     parser.add_argument('--semantic_db', type=str, help='Path to the vector database')
     parser.add_argument('--search', type=str, help='Search strategy', default='semantic')
     parser.add_argument('--expand', type=str, help='Expansion strategy', default='transcriptome')
-    parser.add_argument('--enrichment', action='store_true', default=False, help='Enrichment parameter, if True, then performs ssGSEA')  # Added the --enrichment argument with default value False
+    parser.add_argument('--enrichment', action='store_true', default=False, help="Perform over-representation analysis (ORA) of each sample's top 5%% expressed genes")  # Added the --enrichment argument with default value False
     parser.add_argument('--usage', action='store_true', default=False, help='Print usage information')  # Added the --usage argument to print the usage information
 
     # Add any other command line arguments you need here
 
-    parser.add_argument('--version', action='version', version='%(prog)s 0.1.8')  # Added the --version argument to print the version
+    parser.add_argument('--version', action='version', version='%(prog)s ' + package_version('sample-explorer'))  # Added the --version argument to print the version
 
     if '--usage' in sys.argv:
         print("=====================================================")
         print("BioRAG Command Line Interface")
-        print("Version 0.1.8")
+        print(f"Version {package_version('sample-explorer')}")
         print("Maintainer: WL Chin (melvin.chin@telethonkids.org.au)")
         print("=====================================================")
         print("")
@@ -45,7 +46,7 @@ def main():
         print("1. The gene names should be in uppercase")
         print("2. When using files, the gene_list.txt should contain a list of gene names (in UPPERCASE), one gene per line.")
         print("3. The file containing the text query should have the query string, which may contain multiple sentences, in plain text format")
-        print("4. To perform enrichment, add the --enrichment flag")
+        print("4. To perform enrichment (ORA), add the --enrichment flag")
         print("")    
         sys.exit(0)
 
