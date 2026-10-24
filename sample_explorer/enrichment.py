@@ -76,20 +76,18 @@ class Transcriptome_enrichment:
         query_adata.var_names_make_unique()
         np.nan_to_num(query_adata.X, copy=False, nan=0.0, posinf=0.0, neginf=0.0)
 
-        dc.run_ora(
-            mat=query_adata,
-            net=geneset,
-            source='geneset',
-            target='genesymbol',
-            verbose=False,
-            use_raw=False,
-            min_n=1
-        )
+        net = geneset.rename(columns={"geneset": "source", "genesymbol": "target"})
+        dc.mt.ora(data=query_adata, net=net, tmin=1)
 
-        if query_adata.obsm["ora_pvals"].shape[1] > 1:
-            return query_adata.obsm["ora_pvals"], query_adata.obsm["ora_estimate"]
+        # decoupler 2 adjusts p-values across gene sets within each sample (equal to the
+        # raw p-value for a single gene set); estimate is kept as -log10(p) as in decoupler 1
+        pvals = query_adata.obsm["padj_ora"]
+        estimate = -np.log10(pvals)
+
+        if pvals.shape[1] > 1:
+            return pvals, estimate
         else:
-            res = pd.concat([query_adata.obsm["ora_pvals"], query_adata.obsm["ora_estimate"]], axis=1)
+            res = pd.concat([pvals, estimate], axis=1)
             res.columns = ["pvals", "estimate"]
             _, p_corrected, _, _ = smm.multipletests(res['pvals'], method='fdr_bh')
             res['p_corrected'] = p_corrected

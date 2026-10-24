@@ -146,16 +146,12 @@ class RNASeqAnalysis:
         
         gene_set = self.list_to_dc_geneset(gene_set)
         
-        dc.run_ora(
-            mat=current_ad,
-            net=gene_set,
-            source='geneset',
-            target='genesymbol',
-            verbose=False, use_raw=False, min_n = 1,
-        )
+        net = gene_set.rename(columns={"geneset": "source", "genesymbol": "target"})
+        dc.mt.ora(data=current_ad, net=net, tmin=1)
 
-        results = current_ad.obsm['ora_estimate']
-        results["pvals"] = current_ad.obsm['ora_pvals']
+        # single gene set, so padj_ora is the raw p-value; enrichment_score stays -log10(p)
+        results = -np.log10(current_ad.obsm['padj_ora'])
+        results["pvals"] = current_ad.obsm['padj_ora']
         results["p_corrected"] = smt.multipletests(results["pvals"], method='fdr_bh')[1]
 
         df_res = pd.concat([results, current_ad.obs], axis=1)

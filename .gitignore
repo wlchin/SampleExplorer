@@ -2,3 +2,6 @@ tests/human_gene_v2.2.h5
 sample_explorer/__pycache__/**
 sample_explorer/tests/__pycache__/**
 sample_explorer/tests/__pycache__/**
+.venv/
+__pycache__/
+.pytest_cache/
