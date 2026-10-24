@@ -4,7 +4,15 @@ import os
 import datetime
 import sys
 import logging
-from importlib.metadata import version as package_version
+from importlib.metadata import PackageNotFoundError, version as package_version
+
+def installed_version():
+    """Installed package version, or 'unknown' when the metadata is missing (e.g. an uninstalled checkout)."""
+    try:
+        return package_version('sample-explorer')
+    except PackageNotFoundError:
+        return 'unknown'
+
 
 def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -21,12 +29,12 @@ def main():
 
     # Add any other command line arguments you need here
 
-    parser.add_argument('--version', action='version', version='%(prog)s ' + package_version('sample-explorer'))  # Added the --version argument to print the version
+    parser.add_argument('--version', action='version', version='%(prog)s ' + installed_version())  # Added the --version argument to print the version
 
     if '--usage' in sys.argv:
         print("=====================================================")
         print("BioRAG Command Line Interface")
-        print(f"Version {package_version('sample-explorer')}")
+        print(f"Version {installed_version()}")
         print("Maintainer: WL Chin (melvin.chin@telethonkids.org.au)")
         print("=====================================================")
         print("")

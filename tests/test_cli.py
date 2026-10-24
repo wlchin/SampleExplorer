@@ -109,3 +109,19 @@ def test_version_matches_package(monkeypatch, capsys):
         cli.main()
     assert exit_info.value.code == 0
     assert "0.2.0" in capsys.readouterr().out
+
+
+def test_missing_package_metadata_does_not_crash(monkeypatch, capsys):
+    from importlib.metadata import PackageNotFoundError
+
+    def missing(name):
+        raise PackageNotFoundError(name)
+
+    monkeypatch.setattr(cli, "package_version", missing)
+    for flag in ("--version", "--usage"):
+        monkeypatch.setattr(sys, "argv", ["biorag", flag])
+        with pytest.raises(SystemExit) as exit_info:
+            cli.main()
+        assert exit_info.value.code == 0
+        out = capsys.readouterr().out
+        assert "unknown" in out
