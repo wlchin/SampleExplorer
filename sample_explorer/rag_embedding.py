@@ -1,5 +1,5 @@
 import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
+from sample_explorer.similarity import cosine_similarity
 from sentence_transformers import SentenceTransformer
 import numpy as np
 import logging 
@@ -164,7 +164,7 @@ class Rag_embedding:
         query_embedding = query_embedding.reshape(1, -1)
         list_embeddings = list_embeddings.reshape(len(list_of_queries), -1)
 
-        # Calculate cosine similarity using scikit-learn
+        # Calculate cosine similarity
         cosine_scores = cosine_similarity(query_embedding, list_embeddings)
 
         # Calculate average similarity

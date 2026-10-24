@@ -1,5 +1,5 @@
 import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
+from sample_explorer.similarity import cosine_similarity
 import numpy as np
 from scipy.spatial.distance import pdist
 

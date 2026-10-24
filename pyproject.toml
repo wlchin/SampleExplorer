@@ -11,7 +11,6 @@ dependencies = [
     "archs4py>=1.0.4,<2",
     "anndata>=0.13.4,<0.14",
     "scipy>=1.18.1,<2",
-    "scikit-learn>=1.9.1,<2",
     "sentence-transformers>=6.2.0,<7",
     "tqdm>=4.70.1,<5",
     "requests>=2.34.2,<3",
