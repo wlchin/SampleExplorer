@@ -21,11 +21,9 @@ class Sample_to_series_map:
     def retrieve_text(self, gse_id_list):
         text_list = []
         for i in gse_id_list:
-            try:
-                txt = self.rag_embedding_object.get_text_linked_to_gse(i)
+            txt = self.rag_embedding_object.get_text_linked_to_gse(i)
+            if txt is not None:
                 text_list.append(txt)
-            except:
-                pass
         return text_list
     
     def calculate_similarites_from_samples(self, query, samples):

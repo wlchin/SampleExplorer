@@ -3,7 +3,6 @@ from tqdm import tqdm
 import anndata as ad
 import archs4py as a4
 import os
-import traceback
 from .rnaseq_analysis import RNASeqAnalysis
 from .rag_embedding import Rag_embedding
 from .transcriptome_embedding import Transcriptome_embedding
@@ -124,7 +123,7 @@ class Query_DB:
         - pandas.DataFrame: A subset of the original DataFrame containing the top samples.
         """
         df_meta = self.transcriptome_embedding.embeddings_index.copy()
-        samps = df.iloc[:, 1].sort_values(ascending=False).head(n).index.to_list()
+        samps = df.iloc[:, 1].sort_values(ascending=False, kind="stable").head(n).index.to_list()
         series_of_interest = df_meta[df_meta.index.isin(samps)]
         return series_of_interest
 
@@ -145,14 +144,10 @@ class Query_DB:
         output_df1_list = []
         self.logger.info("Starting transcriptome search...")
         for i in tqdm(range(0, len(my_list), user_batch_size)):
-            try:
-                samps = my_list[i:i + user_batch_size]
-                df1 = self.transcriptome_enrichment.run_decouplr_on_memmaped_adata_with_samples(geneset, samps)
-                # Store the output from each iteration
-                output_df1_list.append(df1)
-            except Exception as e:
-                self.logger.error(f"Failure in batch {i}: {str(e)}")
-                self.logger.error(traceback.format_exc())
+            samps = my_list[i:i + user_batch_size]
+            df1 = self.transcriptome_enrichment.run_decouplr_on_memmaped_adata_with_samples(geneset, samps)
+            # Store the output from each iteration
+            output_df1_list.append(df1)
         final_df1 = pd.concat(output_df1_list)
         series_of_interest = self.get_top_samples(final_df1, n=nsamples)
         relevant_series = series_of_interest["series_id"]  # extract only studies (series)
@@ -193,6 +188,9 @@ class Query_DB:
         for i in tqdm(target_series):
             res_temp = self.transcriptome_embedding.get_closest_transcriptional_studies(i, k=k)
             series_list.append(res_temp)
+        series_list = [s for s in series_list if not s.empty]
+        if not series_list:
+            return pd.DataFrame(columns=["Index", "similarity_score", "gse_id", "gse_id_text"])
         additional_series = pd.concat(series_list)
         additional_series["gse_id_text"] = [self.rag_embedding.get_text_linked_to_gse(i) for i in additional_series["gse_id"]]
         return additional_series
@@ -214,8 +212,11 @@ class Query_DB:
         The number of closest semantic studies to retrieve can be specified using the k parameter.
         """
         self.logger.info("Performing semantic expansion...")
-        additional_series = pd.concat([self.rag_embedding.get_closest_semantic_studies(i, k=k) for i in series_of_interest])
-        return additional_series
+        frames = [self.rag_embedding.get_closest_semantic_studies(i, k=k) for i in series_of_interest]
+        frames = [f for f in frames if not f.empty]
+        if not frames:
+            return pd.DataFrame(columns=["Index", "similarity_score", "gse_id", "gse_id_text"])
+        return pd.concat(frames)
     
 
     def transcriptome_search_with_semantic_expansion(self, geneset_query, search=1000, expand=5):
