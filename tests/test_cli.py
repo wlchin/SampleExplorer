@@ -32,14 +32,14 @@ def fake_query_db(monkeypatch):
 
 def run_cli(monkeypatch, tmp_path, *args):
     monkeypatch.chdir(tmp_path)
-    monkeypatch.setattr(sys, "argv", ["biorag", *args])
+    monkeypatch.setattr(sys, "argv", ["sample-explorer", *args])
     cli.main()
     (output_folder,) = (tmp_path / "results").iterdir()
     return output_folder
 
 
 def test_usage_exits_cleanly(monkeypatch, capsys):
-    monkeypatch.setattr(sys, "argv", ["biorag", "--usage"])
+    monkeypatch.setattr(sys, "argv", ["sample-explorer", "--usage"])
     with pytest.raises(SystemExit) as exit_info:
         cli.main()
     assert exit_info.value.code == 0
@@ -123,7 +123,7 @@ def test_cli_gene_file_with_blank_lines_and_crlf(monkeypatch, tmp_path, fake_que
 
 
 def test_version_matches_package(monkeypatch, capsys):
-    monkeypatch.setattr(sys, "argv", ["biorag", "--version"])
+    monkeypatch.setattr(sys, "argv", ["sample-explorer", "--version"])
     with pytest.raises(SystemExit) as exit_info:
         cli.main()
     assert exit_info.value.code == 0
@@ -138,9 +138,32 @@ def test_missing_package_metadata_does_not_crash(monkeypatch, capsys):
 
     monkeypatch.setattr(cli, "package_version", missing)
     for flag in ("--version", "--usage"):
-        monkeypatch.setattr(sys, "argv", ["biorag", flag])
+        monkeypatch.setattr(sys, "argv", ["sample-explorer", flag])
         with pytest.raises(SystemExit) as exit_info:
             cli.main()
         assert exit_info.value.code == 0
         out = capsys.readouterr().out
         assert "unknown" in out
+
+
+def test_console_command_is_sample_explorer():
+    from importlib.metadata import distribution
+    scripts = {ep.name: ep.value for ep in distribution("sample-explorer").entry_points
+               if ep.group == "console_scripts"}
+    assert scripts == {"sample-explorer": "sample_explorer.cli:main"}
+
+
+def test_download_model_flag(monkeypatch, tmp_path, capsys, fake_query_db):
+    calls = []
+    monkeypatch.setattr(cli, "download_model",
+                        lambda: calls.append(1) or ["/cache/tokenizer.json", "/cache/onnx/model.onnx"])
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys, "argv", ["sample-explorer", "--download-model"])
+    with pytest.raises(SystemExit) as exit_info:
+        cli.main()
+    assert exit_info.value.code == 0
+    assert calls == [1]
+    assert "/cache/onnx/model.onnx" in capsys.readouterr().out
+    # nothing is searched and no results folder is written
+    assert fake_query_db.instances == []
+    assert not (tmp_path / "results").exists()

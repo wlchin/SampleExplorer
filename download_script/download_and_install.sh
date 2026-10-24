@@ -20,9 +20,10 @@ for url in "${files[@]}"; do
     echo "Downloaded $filename to: $download_dir/$filename"
 done
 
-# Install biorag
+# Install SampleExplorer and fetch its language model once
 echo "Installing SampleExplorer..."
 pip install sample-explorer
+sample-explorer --download-model
 
 # Define expected md5sums
 declare -A expected_md5sums=(

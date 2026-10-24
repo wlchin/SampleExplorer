@@ -1,8 +1,8 @@
-# SampleExplorer [![codecov](https://codecov.io/gh/wlchin/bioRAG/graph/badge.svg?token=9GG94JA003)](https://codecov.io/gh/wlchin/bioRAG) ![workflow](https://github.com/wlchin/bioRAG/actions/workflows/python-package.yml/badge.svg) ![version](https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14-blue) ![license](https://img.shields.io/badge/license-MIT-blue) [![DOI](https://zenodo.org/badge/773293929.svg)](https://doi.org/10.5281/zenodo.14233739)
+# SampleExplorer [![codecov](https://codecov.io/gh/wlchin/SampleExplorer/graph/badge.svg?token=9GG94JA003)](https://codecov.io/gh/wlchin/SampleExplorer) ![workflow](https://github.com/wlchin/SampleExplorer/actions/workflows/python-package.yml/badge.svg) ![version](https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14-blue) ![license](https://img.shields.io/badge/license-MIT-blue) [![DOI](https://zenodo.org/badge/773293929.svg)](https://doi.org/10.5281/zenodo.14233739)
 
 This is the repository for SampleExplorer. SampleExplorer can identify relevant studies within the ARCHS4 database, using a text-based query or a gene set. 
 
-![Image Description](https://github.com/wlchin/bioRAG/blob/master/assets/BioRAG.png)
+![SampleExplorer overview](https://github.com/wlchin/SampleExplorer/blob/master/assets/SampleExplorer.png)
 
 ## Table of Contents
 - [Quickstart](#quickstart)
@@ -57,7 +57,13 @@ uv sync
 
 The MiniLM model used for semantic search runs with ONNX Runtime, so PyTorch is not required.
 
-`uv sync` creates a virtual environment in `.venv` with the exact dependency versions recorded in `uv.lock`. Run commands inside it with `uv run`, for example `uv run python my_script.py`. The command line interface is installed as `biorag`; run `biorag --usage` (or `uv run biorag --usage`) for examples.
+`uv sync` creates a virtual environment in `.venv` with the exact dependency versions recorded in `uv.lock`. Run commands inside it with `uv run`, for example `uv run python my_script.py`. The command line interface is installed as `sample-explorer`; run `sample-explorer --usage` (or `uv run sample-explorer --usage`) for examples.
+
+The MiniLM language model is downloaded from Hugging Face the first time a text query is run. To fetch it once in advance, for example before working on an offline compute node, run:
+
+```
+sample-explorer --download-model
+```
 
 ### Additional files
 

@@ -10,21 +10,23 @@ MODEL_REPO = "sentence-transformers/paraphrase-MiniLM-L6-v2"
 MODEL_REVISION = "c9a2bfebc254878aee8c3aca9e6844d5bbb102d1"
 MAX_SEQ_LENGTH = 128
 EMBEDDING_DIM = 384
+MODEL_FILES = ("tokenizer.json", "onnx/model.onnx")
+
+
+def download_model(repo: str = MODEL_REPO, revision: str = MODEL_REVISION) -> list[str]:
+    """Fetch the pinned model files into the Hugging Face cache (no-op if cached); return their local paths."""
+    return [hf_hub_download(repo, filename, revision=revision) for filename in MODEL_FILES]
 
 
 class MiniLMEncoder:
     """Encodes text to mean-pooled, unnormalised MiniLM vectors, as sentence-transformers does."""
 
     def __init__(self, repo: str = MODEL_REPO, revision: str = MODEL_REVISION):
-        self.tokenizer = Tokenizer.from_file(
-            hf_hub_download(repo, "tokenizer.json", revision=revision)
-        )
+        tokenizer_path, model_path = download_model(repo, revision)
+        self.tokenizer = Tokenizer.from_file(tokenizer_path)
         self.tokenizer.enable_truncation(max_length=MAX_SEQ_LENGTH)
         self.tokenizer.enable_padding()
-        self.session = ort.InferenceSession(
-            hf_hub_download(repo, "onnx/model.onnx", revision=revision),
-            providers=["CPUExecutionProvider"],
-        )
+        self.session = ort.InferenceSession(model_path, providers=["CPUExecutionProvider"])
 
     def encode(self, texts: str | Sequence[str], batch_size: int = 32) -> np.ndarray:
         """Return float32 vectors: shape (384,) for a str, (n, 384) for a sequence."""

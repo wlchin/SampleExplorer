@@ -1,4 +1,5 @@
 import argparse
+from .embedding import download_model
 from .sample_explorer import Query_DB
 import os
 import datetime
@@ -16,7 +17,7 @@ def installed_version():
 
 def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-    parser = argparse.ArgumentParser(description='BioRAG Command Line Interface')
+    parser = argparse.ArgumentParser(description='SampleExplorer Command Line Interface')
     parser.add_argument('--gene_list', type=str, nargs='?', default=None, help='Path to the gene list text file or comma-separated gene list (e.g. "IRF1,IRF2,IRF3")')
     parser.add_argument('--text_query', type=str, nargs='?', default=None, help='Path to a text file or a string, e.g. "studies with cardiac myocytes"')
     parser.add_argument('--archs4_file', type=str, help='Path to the ARCHS4 hdf5 file')
@@ -26,6 +27,7 @@ def main():
     parser.add_argument('--expand', type=str, help='Expansion strategy', default='transcriptome')
     parser.add_argument('--enrichment', action='store_true', default=False, help="Perform over-representation analysis (ORA) of each sample's top 5%% expressed genes")  # Added the --enrichment argument with default value False
     parser.add_argument('--usage', action='store_true', default=False, help='Print usage information')  # Added the --usage argument to print the usage information
+    parser.add_argument('--download-model', action='store_true', default=False, help='Download the MiniLM language model once (e.g. before working offline) and exit')
 
     # Add any other command line arguments you need here
 
@@ -33,21 +35,21 @@ def main():
 
     if '--usage' in sys.argv:
         print("=====================================================")
-        print("BioRAG Command Line Interface")
+        print("SampleExplorer Command Line Interface")
         print(f"Version {installed_version()}")
         print("Maintainer: WL Chin (melvin.chin@telethonkids.org.au)")
         print("=====================================================")
         print("")
-        print("This is the usage information for the BioRAG Command Line Interface.")
-        print("Please refer to the documentation on https://github.com/wlchin/bioRAG/ for detailed instructions on how to use this tool.")
+        print("This is the usage information for the SampleExplorer Command Line Interface.")
+        print("Please refer to the documentation on https://github.com/wlchin/SampleExplorer/ for detailed instructions on how to use this tool.")
         print("")
         print("Usage on command line:")
         print("----------------------")
-        print("biorag --gene_list IRF1,IRF2,IRF3 --text_query 'studies with cardiac myocytes' --archs4_file ARCHS4.h5 --transcriptome_db transcriptome.h5 --semantic_db vector.h5")
+        print("sample-explorer --gene_list IRF1,IRF2,IRF3 --text_query 'studies with cardiac myocytes' --archs4_file ARCHS4.h5 --transcriptome_db transcriptome.h5 --semantic_db vector.h5")
         print("")
         print("Usage using files:")
         print("------------------")
-        print("biorag --gene_list gene_list.txt --text_query text_query.txt --archs4_file ARCHS4.h5 --transcriptome_db transcriptome.h5 --semantic_db vector.h5")
+        print("sample-explorer --gene_list gene_list.txt --text_query text_query.txt --archs4_file ARCHS4.h5 --transcriptome_db transcriptome.h5 --semantic_db vector.h5")
         print("")
         print("Notes:")
         print("------")
@@ -55,10 +57,16 @@ def main():
         print("2. When using files, the gene_list.txt should contain a list of gene names (in UPPERCASE), one gene per line.")
         print("3. The file containing the text query should have the query string, which may contain multiple sentences, in plain text format")
         print("4. To perform enrichment (ORA), add the --enrichment flag")
-        print("")    
+        print("5. To download the language model once before first use (e.g. for offline machines), run: sample-explorer --download-model")
+        print("")
         sys.exit(0)
 
     args = parser.parse_args()
+
+    if args.download_model:
+        for path in download_model():
+            print(path)
+        sys.exit(0)
 
     # Check if gene_list is provided
     if args.gene_list is not None:

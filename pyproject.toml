@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [project.scripts]
-biorag = "sample_explorer.cli:main"
+sample-explorer = "sample_explorer.cli:main"
 
 [dependency-groups]
 dev = [

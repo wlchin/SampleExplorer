@@ -37,3 +37,17 @@ def test_padding_invariance():
 def test_truncates_at_128_tokens():
     enc = MiniLMEncoder()
     assert np.array_equal(enc.encode(LONG_TEXT), enc.encode(LONG_TEXT + " extra words"))
+
+
+def test_download_model_fetches_pinned_files(monkeypatch):
+    from sample_explorer import embedding
+    calls = []
+
+    def fake_download(repo, filename, revision):
+        calls.append((repo, filename, revision))
+        return f"/cache/{filename}"
+
+    monkeypatch.setattr(embedding, "hf_hub_download", fake_download)
+    assert embedding.download_model() == ["/cache/tokenizer.json", "/cache/onnx/model.onnx"]
+    assert calls == [(embedding.MODEL_REPO, "tokenizer.json", embedding.MODEL_REVISION),
+                     (embedding.MODEL_REPO, "onnx/model.onnx", embedding.MODEL_REVISION)]

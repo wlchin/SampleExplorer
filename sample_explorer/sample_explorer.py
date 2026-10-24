@@ -460,7 +460,7 @@ class Query_DB:
 
 class Results:
     """
-    Represents the results of a bioRAG analysis.
+    Represents the results of a SampleExplorer search.
 
     Attributes:
         seed_studies (DataFrame): The seed studies used in the analysis.
