@@ -1,6 +1,7 @@
 
 import pandas as pd
 import anndata as ad
+from anndata.utils import make_index_unique
 import numpy as np
 import logging
 from sample_explorer import archs4
@@ -42,10 +43,9 @@ class RNASeqAnalysis:
 
         Returns:
             AnnData: An AnnData object containing the counts and metadata for the samples.
-
-        Note: reading 500 or more samples uses worker processes, so a script calling this
-        must put its code under `if __name__ == "__main__":`.
         """
+        if isinstance(samples, str):
+            raise TypeError("samples must be an iterable of sample IDs, not a string.")
         samples = list(samples)
         sample_counts = archs4.read_counts(self.file, samples)
         if sample_counts.shape[1] == 0:
@@ -54,9 +54,10 @@ class RNASeqAnalysis:
         if missing:
             logger.warning("%d requested sample IDs not found in the ARCHS4 file", missing)
         metadata = archs4.read_sample_metadata(self.file, sample_counts.columns)
+        # ARCHS4 repeats some gene symbols; dedupe as var_names_make_unique would, before AnnData warns
+        sample_counts.index = make_index_unique(sample_counts.index)
         test_ad = ad.AnnData(sample_counts.T)
         test_ad.obs = metadata.loc[sample_counts.columns]
-        test_ad.var_names_make_unique()
         return test_ad
     
     def list_to_dc_geneset(self, list_test_geneset):
