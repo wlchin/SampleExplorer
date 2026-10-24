@@ -33,3 +33,15 @@ def test_accepts_h5py_dataset():
         np.testing.assert_allclose(result, cosine_similarity(in_memory, np.asarray(query)))
     finally:
         backed.file.close()
+
+
+def test_float16_is_computed_in_float64():
+    v = np.full((1, 1000), 3, dtype=np.float16)
+    result = cosine_similarity(v, v)
+    assert result.dtype == np.float64
+    np.testing.assert_allclose(result, [[1.0]], atol=1e-12, rtol=0)
+
+
+def test_float32_stays_float32():
+    v = np.ones((2, 4), dtype=np.float32)
+    assert cosine_similarity(v, v).dtype == np.float32

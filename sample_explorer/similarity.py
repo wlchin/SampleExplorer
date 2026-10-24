@@ -19,17 +19,16 @@ def cosine_similarity(a, b):
     Cosine similarity between every row of ``a`` and every row of ``b``.
 
     Accepts array-likes, including h5py datasets. Rows with zero norm have
-    similarity 0, as in scikit-learn. Floating dtypes are kept (float32 stays
-    float32); other dtypes are computed in float64.
+    similarity 0, as in scikit-learn. Like scikit-learn, the computation is in
+    float32 only when both inputs are float32; every other dtype (float16,
+    integers, mixed) is computed in float64.
 
     Returns:
         np.ndarray of shape (len(a), len(b)).
     """
     a = np.asarray(a)
     b = np.asarray(b)
-    dtype = np.result_type(a.dtype, b.dtype)
-    if not np.issubdtype(dtype, np.floating):
-        dtype = np.float64
+    dtype = np.float32 if a.dtype == np.float32 and b.dtype == np.float32 else np.float64
     a = _as_float_2d(a, dtype)
     b = _as_float_2d(b, dtype)
     return _normalise_rows(a) @ _normalise_rows(b).T
