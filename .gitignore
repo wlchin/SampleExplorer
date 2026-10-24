@@ -5,3 +5,5 @@ sample_explorer/tests/__pycache__/**
 .venv/
 __pycache__/
 .pytest_cache/
+.claude/worktrees/
+.superpowers/
