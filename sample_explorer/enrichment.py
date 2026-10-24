@@ -1,8 +1,7 @@
 
 import pandas as pd
-import decoupler as dc
 import numpy as np
-import statsmodels.stats.multitest as smm
+from sample_explorer.ora import bh_adjust, run_ora
 
 class Transcriptome_enrichment:
     def __init__(self, h5ad_obj):
@@ -65,32 +64,22 @@ class Transcriptome_enrichment:
             estimates, and corrected p-values (if applicable).
         """
         if isinstance(genelist, dict):
-            geneset = self.list_to_dc_geneset_dictionary(genelist)
-        elif isinstance(genelist, list):
-            geneset = self.list_to_dc_geneset(genelist)
+            gene_sets = genelist
+        elif isinstance(genelist, (list, tuple, np.ndarray, pd.Series)):
+            gene_sets = {"query_gene_set": list(genelist)}
         else:
-            print(genelist)
+            raise TypeError(f"genelist must be a dict or a list of gene symbols, not {type(genelist).__name__}")
 
         adata = self.memmap_adata
         query_adata = adata[adata.obs.index.isin(samples_list)].to_memory()
         query_adata.var_names_make_unique()
         np.nan_to_num(query_adata.X, copy=False, nan=0.0, posinf=0.0, neginf=0.0)
 
-        net = geneset.rename(columns={"geneset": "source", "genesymbol": "target"})
-        dc.mt.ora(data=query_adata, net=net, tmin=1)
-
-        # decoupler 2 adjusts p-values across gene sets within each sample (equal to the
-        # raw p-value for a single gene set); estimate is kept as -log10(p) as in decoupler 1
-        pvals = query_adata.obsm["padj_ora"]
-        estimate = -np.log10(pvals)
+        pvals, scores = run_ora(query_adata.X, query_adata.obs_names, query_adata.var_names, gene_sets)
 
         if pvals.shape[1] > 1:
-            return pvals, estimate
+            return pvals, scores
         else:
-            res = pd.concat([pvals, estimate], axis=1)
-            res.columns = ["pvals", "estimate"]
-            _, p_corrected, _, _ = smm.multipletests(res['pvals'], method='fdr_bh')
-            res['p_corrected'] = p_corrected
+            res = pd.DataFrame({"pvals": pvals.iloc[:, 0], "estimate": scores.iloc[:, 0]})
+            res["p_corrected"] = bh_adjust(res["pvals"])
             return res
-    
-

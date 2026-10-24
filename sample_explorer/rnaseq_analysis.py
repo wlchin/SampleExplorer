@@ -1,10 +1,9 @@
 
 import pandas as pd
 import anndata as ad
-import decoupler as dc
 import numpy as np
 import archs4py as a4
-import statsmodels.stats.multitest as smt
+from sample_explorer.ora import bh_adjust, run_ora
 from tqdm import tqdm
 
 class RNASeqAnalysis:
@@ -144,15 +143,11 @@ class RNASeqAnalysis:
         
         current_ad = self.create_anndata_from_samples(query_sample_list)
         
-        gene_set = self.list_to_dc_geneset(gene_set)
-        
-        net = gene_set.rename(columns={"geneset": "source", "genesymbol": "target"})
-        dc.mt.ora(data=current_ad, net=net, tmin=1)
-
-        # single gene set, so padj_ora is the raw p-value; enrichment_score stays -log10(p)
-        results = -np.log10(current_ad.obsm['padj_ora'])
-        results["pvals"] = current_ad.obsm['padj_ora']
-        results["p_corrected"] = smt.multipletests(results["pvals"], method='fdr_bh')[1]
+        pvals, scores = run_ora(current_ad.X, current_ad.obs_names, current_ad.var_names,
+                                {"enrichment_score": list(gene_set)})
+        results = pd.DataFrame({"enrichment_score": scores["enrichment_score"],
+                                "pvals": pvals["enrichment_score"]})
+        results["p_corrected"] = bh_adjust(results["pvals"])
 
         df_res = pd.concat([results, current_ad.obs], axis=1)
 

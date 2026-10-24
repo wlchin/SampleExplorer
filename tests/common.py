@@ -28,7 +28,7 @@ def build_mini_archs4_h5(path):
     a search resolve to samples in this file. Counts are the fixture values for a
     subset of genes, with float16 overflow (inf) capped at the float16 maximum.
     Each sample's most expressed gene is included so that no sample is all zero
-    (decoupler drops empty samples, which breaks the obsm assignment).
+    (an all-zero sample has no ranking to test).
     """
     trans = ad.read_h5ad(TRANSCRIPTOME_DB, backed="r")
     all_counts = np.nan_to_num(trans.X[:].astype(np.float32), posinf=65504.0)

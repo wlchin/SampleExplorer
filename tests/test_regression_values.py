@@ -1,18 +1,17 @@
 """
-Regression values for the numerical core: ORA (decoupler), transcriptome and
-semantic similarity (scikit-learn, sentence-transformers) and the search ranking.
+Regression values for the numerical core: ORA (sample_explorer.ora), transcriptome
+and semantic similarity (scikit-learn, sentence-transformers) and the search ranking.
 
-Captured on 2026-10-24 with the uv.lock environment (decoupler 2.3.0,
-pandas 3.1.0, numpy 2.5.4, anndata 0.13.4, sentence-transformers 6.2.0,
-torch 2.14.1, scikit-learn 1.9.1). A failure after a dependency upgrade means
-search results changed; decide whether the change is acceptable before updating
-the expected values.
+The ORA values are decoupler 1.6's, which the package reproduces exactly. They were
+captured on 2026-10-24; the other values with the uv.lock environment (pandas 3.1.0,
+numpy 2.5.4, anndata 0.13.4, sentence-transformers 6.2.0, torch 2.14.1,
+scikit-learn 1.9.1). A failure after a dependency upgrade means search results
+changed; decide whether the change is acceptable before updating the expected values.
 
-Compared with the previous lock (decoupler 1.6.0) the p-value for a given
-contingency table is unchanged, but decoupler breaks ties between genes at the
-top-5% cutoff differently, which changed the p-value of 13 of the first 500
-fixture samples (15 of all 2,000) and added GSM1098205 to the top-scoring group. The semantic
-and transcriptome similarity values did not change.
+decoupler 2.3 was briefly used and differed from 1.6: its test is two-sided, and it
+breaks ties between genes at the top-5% cutoff differently, which changed the p-value
+of 13 of the first 500 fixture samples (15 of all 2,000). The semantic and
+transcriptome similarity values did not change.
 """
 import numpy as np
 import pandas as pd
@@ -38,17 +37,17 @@ def ora_all(query_db):
 
 def test_ora_pvalue_distribution(ora_first_500):
     values, counts = np.unique(ora_first_500["pvals"], return_counts=True)
-    np.testing.assert_allclose(values, [3.753853161470033e-05, 0.002258355962112546, 0.0727037563920021, 1.0],
+    np.testing.assert_allclose(values, [3.7538531891624514e-05, 0.002258355904199917, 0.07270375322600171, 1.0],
                                rtol=1e-6)
-    assert counts.tolist() == [4, 26, 157, 313]
+    assert counts.tolist() == [3, 28, 156, 313]
 
 
 def test_ora_values_for_selected_samples(ora_first_500):
     # pvals, estimate (-log10 pvals), p_corrected (BH within this 500-sample batch)
     expected = pd.DataFrame(
-        [[3.753853161470033e-05, 4.425522719570437, 0.0046923164518375415],
-         [0.002258355962112546, 2.646207603510618, 0.037639266035209104],
-         [0.0727037563920021, 1.138443149826336, 0.19439507056685054],
+        [[3.7538531891624514e-05, 4.425522716366618, 0.006256421981937418],
+         [0.002258355904199917, 2.6462076146475404, 0.03642509522903092],
+         [0.07270375322600171, 1.1384431687383787, 0.19439506210160887],
          [1.0, 0.0, 1.0]],
         index=["GSM1093230", "GSM1020215", "GSM1000981", "GSM1000984"],
         columns=["pvals", "estimate", "p_corrected"],
@@ -60,12 +59,12 @@ def test_ora_values_for_selected_samples(ora_first_500):
 def test_transcriptome_search_ranking(query_db, ora_all):
     res_df, series = query_db.transcriptome_search(TEST_GENESET, nsamples=10)
     assert len(res_df) == 10
-    # Four samples score clearly highest. The other six are drawn from a large
+    # Three samples score clearly highest. The other seven are drawn from a large
     # group tied at the next score, so which of those are returned depends on sort
     # order; only their score is pinned here.
-    assert {"GSM1093230", "GSM1098205", "GSM1098362", "GSM1098366"} <= set(res_df.index)
+    assert {"GSM1093230", "GSM1098362", "GSM1098366"} <= set(res_df.index)
     scores = sorted(ora_all.loc[res_df.index, "estimate"], reverse=True)
-    np.testing.assert_allclose(scores, [4.425522719570437] * 4 + [2.646207603510618] * 6, rtol=1e-6)
+    np.testing.assert_allclose(scores, [4.425522716366618] * 3 + [2.6462076146475404] * 7, rtol=1e-6)
     assert series.tolist() == res_df["gse_id"].tolist()
 
 

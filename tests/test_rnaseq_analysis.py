@@ -1,14 +1,15 @@
 """
 RNASeqAnalysis against a miniature ARCHS4 file (see tests/common.py), so the
-archs4py readers and the decoupler ORA run for real.
+archs4py readers and the ORA run for real.
 
-Expected values were captured on 2026-10-24 with archs4py 0.2.12 / decoupler 1.6.0
-and are unchanged with archs4py 1.0.4 / decoupler 2.3.0.
+Expected values were captured on 2026-10-24 with archs4py 0.2.12 / decoupler 1.6.0,
+which the package reproduces (sample_explorer.ora). decoupler 2.3 was briefly used
+and differed (two-sided test, tie rule).
 """
 import numpy as np
 import pandas as pd
 import pytest
-from statsmodels.stats.multitest import multipletests
+from scipy.stats import false_discovery_control
 
 from sample_explorer.rnaseq_analysis import RNASeqAnalysis
 from tests.common import TEST_GENESET, read_archs4_counts
@@ -95,7 +96,7 @@ def test_scores_do_not_depend_on_batch_composition(enrichment, enrichment_batche
 
 @pytest.mark.xfail(raises=AssertionError, reason="BH correction is applied within each batch instead of across all samples")
 def test_batched_fdr_is_corrected_across_all_samples(enrichment_batched):
-    expected = multipletests(enrichment_batched["pvals"], method="fdr_bh")[1]
+    expected = false_discovery_control(enrichment_batched["pvals"], method="bh")
     np.testing.assert_allclose(enrichment_batched["p_corrected"], expected)
 
 
