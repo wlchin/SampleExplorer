@@ -27,12 +27,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: uv sync --locked
-      - name: Cache the sentence-transformers model
+      - name: Cache the MiniLM ONNX model
         id: hf-cache
         uses: actions/cache@v6
         with:
           path: ~/.cache/huggingface
-          key: huggingface-paraphrase-MiniLM-L6-v2
+          key: huggingface-paraphrase-MiniLM-L6-v2-onnx-c9a2bfe
       - name: Run the automated tests
         env:
           # with a cached model, avoid contacting the Hugging Face Hub (rate limits)

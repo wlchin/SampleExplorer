@@ -1,6 +1,6 @@
 import pandas as pd
 from sample_explorer.similarity import cosine_similarity
-from sentence_transformers import SentenceTransformer
+from sample_explorer.embedding import MiniLMEncoder
 import numpy as np
 import logging 
 import sys
@@ -10,8 +10,8 @@ class Rag_embedding:
         self.logger = logging.getLogger(__name__)
 
 
-        self.model = SentenceTransformer("paraphrase-MiniLM-L6-v2")
-        self.logger.info("Loaded SentenceTransformer model.")
+        self.model = MiniLMEncoder()
+        self.logger.info("Loaded MiniLM ONNX encoder.")
         self.rag_embedding_index = rag_index
         self.rag_embedding_matrix = rag_embedding_matrix
 
