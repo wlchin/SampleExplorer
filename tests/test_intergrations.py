@@ -97,5 +97,5 @@ def test_metadata_only_without_enrichment(metadata_search):
 
 
 def test_sample_metadata_case(metadata_search):
-    # archs4py 1.x returns sample metadata as stored (0.2.x upper-cased it)
+    # the ARCHS4 reader returns sample metadata as stored (0.2.x upper-cased it)
     assert metadata_search.samples["title"].str.startswith("Sample GSM").all()

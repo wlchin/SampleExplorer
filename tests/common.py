@@ -21,7 +21,7 @@ def _encode(values):
 
 def build_mini_archs4_h5(path):
     """
-    Write a small HDF5 file in the ARCHS4 gene-level layout read by archs4py
+    Write a small HDF5 file in the ARCHS4 gene-level layout read by sample_explorer.archs4
     (data/expression genes x samples, meta/genes/symbol, meta/samples/<field>).
 
     Samples and series come from the transcriptome fixture so that series found by
@@ -46,7 +46,7 @@ def build_mini_archs4_h5(path):
         "geo_accession": gsm,
         "series_id": obs["series_id"].to_list(),
         "characteristics_ch1": obs["characteristics_ch1"].to_list(),
-        # mixed case on purpose: archs4py 0.2.x upper-cases metadata, 1.x does not
+        # mixed case on purpose: the old archs4py 0.2.x upper-cased metadata
         "extract_protocol_ch1": [f"Total RNA protocol {i % 7}" for i in range(len(gsm))],
         "source_name_ch1": [f"Source {i % 3}" for i in range(len(gsm))],
         "title": [f"Sample {g}" for g in gsm],

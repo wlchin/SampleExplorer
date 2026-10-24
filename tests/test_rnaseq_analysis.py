@@ -1,6 +1,6 @@
 """
 RNASeqAnalysis against a miniature ARCHS4 file (see tests/common.py), so the
-archs4py readers and the ORA run for real.
+ARCHS4 reader and the ORA run for real.
 
 Expected values were captured on 2026-10-24 with archs4py 0.2.12 / decoupler 1.6.0,
 which the package reproduces (sample_explorer.ora). decoupler 2.3 was briefly used

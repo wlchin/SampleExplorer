@@ -1,8 +1,8 @@
 import pandas as pd
 from tqdm import tqdm
 import anndata as ad
-import archs4py as a4
 import os
+from . import archs4
 from .rnaseq_analysis import RNASeqAnalysis
 from .rag_embedding import Rag_embedding
 from .transcriptome_embedding import Transcriptome_embedding
@@ -78,7 +78,7 @@ class Query_DB:
         Returns:
             pandas.DataFrame: A DataFrame containing processed metadata with columns 'series_id' and 'samples'.
         """
-        x = a4.meta.meta(h5_path, ".*", meta_fields=["series_id"])
+        x = archs4.read_series_sample_map(h5_path)
         x["samples"] = x.index
         x = x[['series_id', 'samples']].drop_duplicates()
         return x
@@ -95,7 +95,7 @@ class Query_DB:
             dict: A dictionary containing the sample metadata.
 
         """
-        sample_meta = a4.meta.samples(h5_path, sample_list)
+        sample_meta = archs4.read_sample_metadata(h5_path, sample_list)
         return sample_meta
 
     def get_top_samples(self, df, n=1000):

@@ -2,9 +2,13 @@
 import pandas as pd
 import anndata as ad
 import numpy as np
-import archs4py as a4
+import logging
+from sample_explorer import archs4
 from sample_explorer.ora import bh_adjust, run_ora
 from tqdm import tqdm
+
+logger = logging.getLogger(__name__)
+
 
 class RNASeqAnalysis:
     def __init__(self, file):
@@ -28,12 +32,7 @@ class RNASeqAnalysis:
         Returns:
             AnnData: An AnnData object containing the counts and metadata for the series.
         """
-        series_counts = a4.data.series(self.file, series)
-        metadata = a4.meta.series(self.file, series)
-        test_ad = ad.AnnData(series_counts.T)
-        test_ad.obs = metadata
-        test_ad.var_names_make_unique()
-        return test_ad
+        return self.create_anndata_from_samples(archs4.samples_in_series(self.file, series))
 
     def create_anndata_from_samples(self, samples):
         """Create an AnnData object with counts and metadata for the given samples.
@@ -44,10 +43,16 @@ class RNASeqAnalysis:
         Returns:
             AnnData: An AnnData object containing the counts and metadata for the samples.
         """
-        sample_counts = a4.data.samples(self.file, samples)
-        metadata = a4.meta.samples(self.file, samples)
+        samples = list(samples)
+        sample_counts = archs4.read_counts(self.file, samples)
+        if sample_counts.shape[1] == 0:
+            raise ValueError("None of the requested samples were found in the ARCHS4 file")
+        missing = len(set(samples)) - sample_counts.shape[1]
+        if missing:
+            logger.warning("%d requested sample IDs not found in the ARCHS4 file", missing)
+        metadata = archs4.read_sample_metadata(self.file, sample_counts.columns)
         test_ad = ad.AnnData(sample_counts.T)
-        test_ad.obs = metadata
+        test_ad.obs = metadata.loc[sample_counts.columns]
         test_ad.var_names_make_unique()
         return test_ad
     
@@ -125,7 +130,7 @@ class RNASeqAnalysis:
         Returns:
         - (list of ) sample dataframes: The samples created from the series.
         """
-        samples = [a4.meta.series(self.file, i) for i in series]
+        samples = [archs4.read_sample_metadata(self.file, archs4.samples_in_series(self.file, i)) for i in series]
         return samples
 
     def perform_enrichment_on_samples(self, query_sample_list, gene_set): 
