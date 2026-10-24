@@ -1,8 +1,7 @@
 
 import pandas as pd
-import decoupler as dc
 import numpy as np
-import statsmodels.stats.multitest as smm
+from sample_explorer.ora import bh_adjust, run_ora
 
 class Transcriptome_enrichment:
     def __init__(self, h5ad_obj):
@@ -53,46 +52,36 @@ class Transcriptome_enrichment:
     
     def run_decouplr_on_memmaped_adata_with_samples(self, genelist, samples_list):
         """
-        Runs the decouplr algorithm on a memmaped AnnData object with a specified list of samples.
+        Runs over-representation analysis (ORA, sample_explorer.ora) on a memmaped AnnData object
+        for a specified list of samples. The method keeps its historical name.
 
         Args:
-            genelist (dict or list): The gene list to use for the decouplr algorithm. It can be either a dictionary
-                representing a geneset or a list of genes.
+            genelist (dict or list): The gene set(s) to test. It can be either a dictionary mapping
+                gene set names to genes, or a list of genes.
             samples_list (list): The list of sample names to include in the analysis.
 
         Returns:
-            pandas.DataFrame: A DataFrame containing the results of the decouplr algorithm, including the p-values,
-            estimates, and corrected p-values (if applicable).
+            pandas.DataFrame: For one gene set, a DataFrame with the ORA p-values ("pvals"), scores
+            ("estimate", -log10 p) and BH-corrected p-values ("p_corrected"). For several gene sets,
+            the (pvals, scores) DataFrames from the ORA.
         """
         if isinstance(genelist, dict):
-            geneset = self.list_to_dc_geneset_dictionary(genelist)
-        elif isinstance(genelist, list):
-            geneset = self.list_to_dc_geneset(genelist)
+            gene_sets = genelist
+        elif isinstance(genelist, (list, tuple, np.ndarray, pd.Series)):
+            gene_sets = {"query_gene_set": list(genelist)}
         else:
-            print(genelist)
+            raise TypeError(f"genelist must be a dict or a list of gene symbols, not {type(genelist).__name__}")
 
         adata = self.memmap_adata
         query_adata = adata[adata.obs.index.isin(samples_list)].to_memory()
         query_adata.var_names_make_unique()
         np.nan_to_num(query_adata.X, copy=False, nan=0.0, posinf=0.0, neginf=0.0)
 
-        dc.run_ora(
-            mat=query_adata,
-            net=geneset,
-            source='geneset',
-            target='genesymbol',
-            verbose=False,
-            use_raw=False,
-            min_n=1
-        )
+        pvals, scores = run_ora(query_adata.X, query_adata.obs_names, query_adata.var_names, gene_sets)
 
-        if query_adata.obsm["ora_pvals"].shape[1] > 1:
-            return query_adata.obsm["ora_pvals"], query_adata.obsm["ora_estimate"]
+        if pvals.shape[1] > 1:
+            return pvals, scores
         else:
-            res = pd.concat([query_adata.obsm["ora_pvals"], query_adata.obsm["ora_estimate"]], axis=1)
-            res.columns = ["pvals", "estimate"]
-            _, p_corrected, _, _ = smm.multipletests(res['pvals'], method='fdr_bh')
-            res['p_corrected'] = p_corrected
+            res = pd.DataFrame({"pvals": pvals.iloc[:, 0], "estimate": scores.iloc[:, 0]})
+            res["p_corrected"] = bh_adjust(res["pvals"])
             return res
-    
-

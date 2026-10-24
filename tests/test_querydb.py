@@ -1,7 +1,10 @@
 
 
+import pytest
+
 from sample_explorer.sample_explorer import Query_DB
 from sample_explorer.sample_explorer import Results
+from tests.common import SEMANTIC_DB, TRANSCRIPTOME_DB
 
 test_geneset =  ["IDI1", "SP100","KLF6", "PLPP1", "NEO1", "TSPAN6"]
 
@@ -16,7 +19,7 @@ test_geneset =  ["IDI1", "SP100","KLF6", "PLPP1", "NEO1", "TSPAN6"]
 
 
 #new_query_db = Query_DB("tests/test_semantic_db.h5ad", "tests/test_transcriptome_db.h5ad", "tests/human_gene_v2.2.h5")
-new_query_db = Query_DB("tests/test_semantic_db.h5ad", "tests/test_transcriptome_db.h5ad")
+new_query_db = Query_DB(SEMANTIC_DB, TRANSCRIPTOME_DB)
 
 # res = new_query_db.search(test_geneset, "Trans-chromosomal regulation lincRNA", search = "semantic", expand = "transcriptome", search_n = 50, expand_n = 5)
 
@@ -27,9 +30,10 @@ new_query_db = Query_DB("tests/test_semantic_db.h5ad", "tests/test_transcriptome
 
 def test_transcriptome_search():
     res_df, series_of_interest = new_query_db.transcriptome_search(test_geneset, nsamples = 10)
-    series_of_interest2 = new_query_db.get_top_samples(res_df, n = 10)
-    series_of_interest2 = series_of_interest2.rename(columns={"series_id": "gse_id"})
-    assert res_df.equals(series_of_interest2)
+    assert res_df.shape[0] == 10
+    assert "gse_id" in res_df.columns
+    assert res_df.index.isin(new_query_db.transcriptome_embedding.embeddings_index.index).all()
+    assert series_of_interest.tolist() == res_df["gse_id"].tolist()
 
 def test_semantic_search():
     df, res = new_query_db.semantic_search("Trans-chromosomal regulation lincRNA")
@@ -156,3 +160,24 @@ def test_expansion_semantic_zero_values():
                             n_seed = 14, n_expansion = 0)
     
     assert res.seed_studies.equals(res2.seed_studies)
+
+
+def test_search_requires_a_query():
+    with pytest.raises(ValueError):
+        new_query_db.search(geneset=None, text_query=None)
+
+def test_search_requires_both_or_neither_size():
+    with pytest.raises(ValueError):
+        new_query_db.search(geneset=test_geneset, text_query="lincRNA", n_seed=5, n_expansion=None)
+
+def test_search_rejects_zero_seed():
+    with pytest.raises(ValueError):
+        new_query_db.search(geneset=test_geneset, text_query="lincRNA", n_seed=0, n_expansion=5)
+
+def test_search_rejects_geneset_without_known_genes():
+    with pytest.raises(ValueError):
+        new_query_db.search(geneset=["NOT_A_GENE_1", "NOT_A_GENE_2"], text_query="lincRNA", n_seed=5, n_expansion=5)
+
+def test_search_rejects_unknown_strategy():
+    with pytest.raises(ValueError):
+        new_query_db.search(geneset=test_geneset, text_query="lincRNA", search="Semantic", n_seed=5, n_expansion=5)

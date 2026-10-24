@@ -1,10 +1,11 @@
 
 import anndata as ad
 from sample_explorer.sample_explorer import Transcriptome_enrichment
+from tests.common import TRANSCRIPTOME_DB
 
 
 test_geneset =  ["IDI1", "SP100","KLF6", "PLPP1", "NEO1", "TSPAN6"]
-x = ad.read_h5ad("tests/test_transcriptome_db.h5ad", backed = "r")
+x = ad.read_h5ad(TRANSCRIPTOME_DB, backed = "r")
 te = Transcriptome_enrichment(x)
 
 

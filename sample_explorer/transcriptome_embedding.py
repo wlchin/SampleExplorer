@@ -1,7 +1,10 @@
 import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
+from sample_explorer.similarity import cosine_similarity
 import numpy as np
 from scipy.spatial.distance import pdist
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Transcriptome_embedding:
@@ -59,37 +62,36 @@ class Transcriptome_embedding:
         Returns:
             pandas.DataFrame: A DataFrame containing the closest studies with their indices and similarity scores.
         """
-        try:
-            relevant_embedding_indices = np.where(self.embeddings_index["series_id"].isin([query_gse_id]))
-            numpy_array = relevant_embedding_indices[0]
-            flattened_array = numpy_array.flatten()
-            query_embeddings = self.embedding_matrix[flattened_array,]
-            
-            cosine_similarities = cosine_similarity(self.embedding_matrix, query_embeddings)
-            average_cosine_similarities = np.mean(cosine_similarities, axis=1)
-            
-            sorted_indices = np.argsort(average_cosine_similarities)[::-1]
-            
-            top_k = k
-            results_data = []
-        
-            for i in range(top_k):
-                index = sorted_indices[i]
-                similarity = average_cosine_similarities[index]
-                results_data.append({'Index': index, 'similarity_score': similarity})
-        
-            # Create a Pandas DataFrame from the results_data
-            results_df = pd.DataFrame(results_data)
-            results_df["gse_id"] = [self.get_gse_from_transcriptome_index(i) for i in results_df.Index]
-            return results_df
-        except:
-            return pd.DataFrame()
+        columns = ["Index", "similarity_score", "gse_id"]
+        flattened_array = np.flatnonzero(self.embeddings_index["series_id"].isin([query_gse_id]))
+        if flattened_array.size == 0:
+            logger.warning("Series %s not found in the transcriptome store; skipping.", query_gse_id)
+            return pd.DataFrame(columns=columns)
+        query_embeddings = self.embedding_matrix[flattened_array,]
+
+        cosine_similarities = cosine_similarity(self.embedding_matrix, query_embeddings)
+        average_cosine_similarities = np.mean(cosine_similarities, axis=1)
+
+        sorted_indices = np.argsort(-average_cosine_similarities, kind="stable")
+
+        top_k = min(k, len(sorted_indices))
+        results_data = []
+
+        for i in range(top_k):
+            index = sorted_indices[i]
+            similarity = average_cosine_similarities[index]
+            results_data.append({'Index': index, 'similarity_score': similarity})
+
+        # Create a Pandas DataFrame from the results_data
+        results_df = pd.DataFrame(results_data, columns=["Index", "similarity_score"])
+        results_df["gse_id"] = [self.get_gse_from_transcriptome_index(i) for i in results_df.Index]
+        return results_df
 
     def get_closest_transcriptional_studies_by_sample(self, query_sample, k = 5):
         """this takes a (single) sample in a list and returns the k closest transcriptional studies"""
         embedding = self.search_relevant_embeddings_by_sample(query_sample)
         query_vector = embedding.reshape(1, -1)
         cosine_similarities = cosine_similarity(query_vector, self.embedding_matrix)
-        closest_indices = np.argsort(cosine_similarities[0])[-k:][::-1]
+        closest_indices = np.argsort(-cosine_similarities[0], kind="stable")[:k]
         closest_samples = self.embeddings_index.iloc[closest_indices,:]
         return closest_samples

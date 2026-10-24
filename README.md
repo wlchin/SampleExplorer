@@ -1,8 +1,8 @@
-# SampleExplorer [![codecov](https://codecov.io/gh/wlchin/bioRAG/graph/badge.svg?token=9GG94JA003)](https://codecov.io/gh/wlchin/bioRAG) ![workflow](https://github.com/wlchin/bioRAG/actions/workflows/python-package.yml/badge.svg) ![version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue) ![license](https://img.shields.io/badge/license-MIT-blue) [![DOI](https://zenodo.org/badge/773293929.svg)](https://doi.org/10.5281/zenodo.14233739)
+# SampleExplorer [![codecov](https://codecov.io/gh/wlchin/SampleExplorer/graph/badge.svg?token=9GG94JA003)](https://codecov.io/gh/wlchin/SampleExplorer) ![workflow](https://github.com/wlchin/SampleExplorer/actions/workflows/python-package.yml/badge.svg) ![version](https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14-blue) ![license](https://img.shields.io/badge/license-MIT-blue) [![DOI](https://zenodo.org/badge/773293929.svg)](https://doi.org/10.5281/zenodo.14233739)
 
 This is the repository for SampleExplorer. SampleExplorer can identify relevant studies within the ARCHS4 database, using a text-based query or a gene set. 
 
-![Image Description](https://github.com/wlchin/bioRAG/blob/master/assets/BioRAG.png)
+![SampleExplorer overview](https://github.com/wlchin/SampleExplorer/blob/master/assets/SampleExplorer.png)
 
 ## Table of Contents
 - [Quickstart](#quickstart)
@@ -10,7 +10,7 @@ This is the repository for SampleExplorer. SampleExplorer can identify relevant 
 - [Advanced Usage](#advanced-usage)
 - [Modifying searches using different inputs](#modifying-searches-using-different-inputs)
 - [Modifying searches using different expansion strategies](#modifying-searches-using-different-expansion-strategies)
-- [Optional single sample gene set enrichment analysis](#optional-single-sample-gene-set-enrichment-analysis)
+- [Optional over-representation analysis (ORA)](#optional-over-representation-analysis-ora)
 - [Running gene set enrichment using the containerized application](#running-gene-set-enrichment-using-the-containerized-application)
 - [Downloading the transcriptome embeddings file](#downloading-the-transcriptome-embeddings-file)
 - [License](#license)
@@ -39,12 +39,30 @@ You can perform gene set enrichment on this output as described in the section [
 
 For those wanting to use all functions for this software, please install the python-based application. 
 
-SampleExplorer has been tested on python 3.9, 3.10, and 3.11. 
+SampleExplorer requires Python 3.12 or later, and has been tested on Python 3.12, 3.13, and 3.14.
 
 Install SampleExplorer via PyPI with the following command:
 
 ```
 pip install sample-explorer
+```
+
+To install the latest version from this repository, use [uv](https://docs.astral.sh/uv/):
+
+```
+git clone https://github.com/wlchin/SampleExplorer.git
+cd SampleExplorer
+uv sync
+```
+
+The MiniLM model used for semantic search runs with ONNX Runtime, so PyTorch is not required.
+
+`uv sync` creates a virtual environment in `.venv` with the exact dependency versions recorded in `uv.lock`. Run commands inside it with `uv run`, for example `uv run python my_script.py`. The command line interface is installed as `sample-explorer`; run `sample-explorer --usage` (or `uv run sample-explorer --usage`) for examples.
+
+The MiniLM language model is downloaded from Hugging Face the first time a text query is run. To fetch it once in advance, for example before working on an offline compute node, run:
+
+```
+sample-explorer --download-model
 ```
 
 ### Additional files
@@ -81,16 +99,20 @@ To load SampleExplorer, follow these steps:
 
     text_query = "This text query usually describes the experiment"
 
-    geneset_query = ["IFNG", "IRF1", "IFR2"]
+    geneset_query = ["IFNG", "IRF1", "IRF2"]
 
     result = new_query_db.search(geneset = geneset_query, text_query = text_query)
 
     ```
 
+    **Note:** Large ARCHS4 reads use worker processes and temporary disk space (in `TMPDIR`) about the size of the request.
+
+    To see progress messages, such as loading the stores, turn on logging with `import logging; logging.basicConfig(level=logging.INFO)`.
+
 4. The output is a Results object, which is composed of three pandas dataframes, which can be accessed via dot notation. 
 - The "seed_studies" variable holds a dataframe containing study metadata from the search step. 
 - The "expansion_studies" holds a dataframe of studies from the expansion step, 
-- The "samples" variable holds a dataframe of the relevant samples, with metadata derived from the ARCHS4 database. 
+- The "samples" variable holds a dataframe of the relevant samples, with metadata derived from the ARCHS4 database. It is only populated when the ARCHS4 HDF5 database path is passed to `Query_DB`; otherwise it is `None`.
 
 ```python
 
@@ -133,11 +155,11 @@ All SampleExplorer searches should contain at least a text query or a gene set q
 
 ## Modifying searches using different expansion strategies
 
-By default, SampleExplorer will perform semantic search, followed by transcriptomic expansion. However, this search strategy can be modified. For instance, one can use semantic search, followed by perfoming the expansion step using semantic similiarity. In this case, the transcriptome vector store is not queried. 
+By default, SampleExplorer will perform semantic search, followed by transcriptomic expansion. However, this search strategy can be modified. For instance, one can use semantic search, followed by performing the expansion step using semantic similarity. In this case, the transcriptome vector store is not queried. 
 
-The "seed" and "expand" parameters accepts either "transcriptome" or "semantic" as options.
+The "search" and "expand" parameters accept either "transcriptome" or "semantic" as options.
 
-If transcriptome search is performed as the initial step, the count data from "representative transcriptomes" in the transcriptome vector store is used to search for enriched samples, using ssGSEA (single sample gene set enrichment analysis) to rank the most relevant samples. In semantic search, SampleExplorer retrieves the most semantically similar studies to the text query, using cosine distance as the metric.
+If transcriptome search is performed as the initial step, the count data from "representative transcriptomes" in the transcriptome vector store is used to search for enriched samples, using over-representation analysis (ORA) of each sample's top 5% most expressed genes to rank the most relevant samples. In semantic search, SampleExplorer retrieves the most semantically similar studies to the text query, using cosine distance as the metric.
 
 1. Example 1 - perform semantic search, followed by transcriptome expansion.
 
@@ -155,7 +177,7 @@ If transcriptome search is performed as the initial step, the count data from "r
 
     ```
 
-2. Example 3 - perform semantic search, followed by semantic expansion, using only a text query.
+3. Example 3 - perform semantic search, followed by semantic expansion, using only a text query.
 
     ```python
 
@@ -163,24 +185,24 @@ If transcriptome search is performed as the initial step, the count data from "r
 
     ```
 
-The types of searches which can be performed depend on input. For instance,if only a gene set is supplied, the search step defaults to "transcriptome", with the user able to select between "transcriptome" and "semantic" for the expansion step.
+The types of searches which can be performed depend on input. For instance, if only a gene set is supplied, the search step defaults to "transcriptome", with the user able to select between "transcriptome" and "semantic" for the expansion step.
 
-## Optional single sample gene set enrichment analysis
+## Optional over-representation analysis (ORA)
 
-To further refine the set of samples and studies returned by SampleExplorer search, ssGSEA can be peformed on all samples returned by the query. Use the "perform_enrichment" parameter to specifiy if ssGSEA should be performed on all samples. If so, the returned dataframe will contain enrichment scores, pvalues and FDRs. The ssGSEA results will be stored as a dataframe in the "samples" attribute in the Results object.
+To further refine the set of samples and studies returned by SampleExplorer search, over-representation analysis (ORA) of each sample's top 5% most expressed genes can be performed on all samples returned by the query. Use the "perform_enrichment" parameter to specify if ORA should be performed on all samples. Enrichment requires a gene set and the ARCHS4 HDF5 database. If so, the returned dataframe will contain enrichment scores, pvalues and FDRs. The ORA results will be stored as a dataframe in the "samples" attribute in the Results object.
 
 ```python
 
-    result = new_query_db.search(text_query = text_query, geneset = None, search = "semantic", expand = "semantic", perform_enrichment = True)
+    result = new_query_db.search(text_query = text_query, geneset = geneset_query, search = "semantic", expand = "semantic", perform_enrichment = True)
 
     # save enrichment results from the sample dataframe
-    results.samples.to_csv("samples_with_ssgsea_results.csv")
+    result.samples.to_csv("samples_with_ora_results.csv")
 
 ```
 
 ## Running gene set enrichment using the containerized application
 
-You can use the containerized environment to perform single-sample gene set enrichment analysis (ssGSEA). When a gene set is specified in the containerized application together with a natural language query, it generates a custom Python script tailored for running ssGSEA on retrieved samples. 
+You can use the containerized environment to perform over-representation analysis (ORA) of each sample's top 5% most expressed genes. When a gene set is specified in the containerized application together with a natural language query, it generates a custom Python script tailored for running ORA on retrieved samples. 
 
 To execute gene set enrichment with the prebuilt environment, use Docker with a volume mount. This will map the container's working directory to a local folder that contains both the custom script and the ARCHS4 HDF5 database.
 
@@ -193,7 +215,7 @@ To execute gene set enrichment with the prebuilt environment, use Docker with a 
     docker run --rm -v /path/to/local/folder:/app wlc27/streamlit_sample_explorer:0.1.9 python /app/gene_set.py
     ```
 
-This command will execute the `gene_set.py` script inside the Docker container, utilizing the local HDF5 database for gene set enrichment analysis. The results will be output as a CSV file in your local directory, containing the single-sample gene set enrichment results.
+This command will execute the `gene_set.py` script inside the Docker container, utilizing the local HDF5 database for gene set enrichment analysis. The results will be output as a CSV file in your local directory, containing the ORA results.
 
 
 ## Downloading the transcriptome embeddings file
@@ -204,9 +226,16 @@ For users requiring only the default use case (natural language search followed 
 
 SampleExplorer is published under the MIT License.
 
-## Database creation, benchmarking workflows, tests, and and continuous integration
+## Database creation, benchmarking workflows, tests, and continuous integration
 
-The scripts for generating the embedding databases and performing benchmarking are located in the [workflow folder](./workflow/). The repository includes a [set](https://github.com/wlchin/SampleExplorer/tree/master/tests) of test data and testing scripts. The testing framework utilizes pytest.  
+The scripts for generating the embedding databases and performing benchmarking are located in the [workflow folder](./workflow/). The repository includes a [set](https://github.com/wlchin/SampleExplorer/tree/master/tests) of test data and testing scripts, which use pytest. To run the tests from a clone of the repository:
+
+```
+uv sync
+uv run pytest
+```
+
+The first run downloads the MiniLM ONNX model used for semantic search from Hugging Face. Continuous integration runs the tests on Python 3.12, 3.13, and 3.14 with the locked dependencies in `uv.lock`.
 
 ## References
 

@@ -3,8 +3,9 @@
 
 from sample_explorer.rag_embedding import Rag_embedding
 import anndata as ad
+from tests.common import SEMANTIC_DB
 
-x = ad.read_h5ad("tests/test_semantic_db.h5ad")
+x = ad.read_h5ad(SEMANTIC_DB)
 
 rag_embedding = Rag_embedding(x.obs, x.X)
 

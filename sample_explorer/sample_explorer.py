@@ -1,9 +1,8 @@
 import pandas as pd
 from tqdm import tqdm
 import anndata as ad
-import archs4py as a4
 import os
-import traceback
+from . import archs4
 from .rnaseq_analysis import RNASeqAnalysis
 from .rag_embedding import Rag_embedding
 from .transcriptome_embedding import Transcriptome_embedding
@@ -11,26 +10,13 @@ from .enrichment import Transcriptome_enrichment
 import scipy.sparse as sp
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
-import warnings
 import logging
-import sys
-warnings.filterwarnings('ignore')
- 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
 class Query_DB:
     logger = logging.getLogger(__name__)
     
     def __init__(self, semantic_vector_store, transcriptomic_vector_store, h5file=None):
         self.logger = logging.getLogger(__name__)
-        H = logging.StreamHandler(sys.stdout)
-        H.setLevel(logging.INFO)
-        H.setFormatter(
-            logging.Formatter(
-                fmt="[%(asctime)s] %(levelname)s: %(message)s",
-                datefmt="%d/%m/%Y ( %H:%M:%S )"
-            ))
-        self.logger.addHandler(H)
 
         self.logger.info("Loading transcriptomic vector store...")
         trans_obj = ad.read_h5ad(transcriptomic_vector_store, backed="r")
@@ -92,7 +78,7 @@ class Query_DB:
         Returns:
             pandas.DataFrame: A DataFrame containing processed metadata with columns 'series_id' and 'samples'.
         """
-        x = a4.meta.meta(h5_path, ".*", meta_fields=["series_id"])
+        x = archs4.read_series_sample_map(h5_path)
         x["samples"] = x.index
         x = x[['series_id', 'samples']].drop_duplicates()
         return x
@@ -106,11 +92,19 @@ class Query_DB:
             sample_list (list): A list of sample names.
 
         Returns:
-            dict: A dictionary containing the sample metadata.
+            pandas.DataFrame: The sample metadata, indexed by sample ID (index unnamed).
 
         """
-        sample_meta = a4.meta.samples(h5_path, sample_list)
-        return sample_meta
+        sample_meta = archs4.read_sample_metadata(h5_path, sample_list)
+        return sample_meta.rename_axis(None)
+
+    def _samples_of_studies(self, studies):
+        """Rows of the series-to-sample map for the given studies; warns when there are none."""
+        samps = self.metafile[self.metafile["series_id"].isin(studies["gse_id"])]
+        if samps.empty:
+            self.logger.warning("The %d selected studies have no samples in the ARCHS4 file, so the samples table is empty.",
+                                studies["gse_id"].nunique())
+        return samps
 
     def get_top_samples(self, df, n=1000):
         """
@@ -124,7 +118,7 @@ class Query_DB:
         - pandas.DataFrame: A subset of the original DataFrame containing the top samples.
         """
         df_meta = self.transcriptome_embedding.embeddings_index.copy()
-        samps = df.iloc[:, 1].sort_values(ascending=False).head(n).index.to_list()
+        samps = df.iloc[:, 1].sort_values(ascending=False, kind="stable").head(n).index.to_list()
         series_of_interest = df_meta[df_meta.index.isin(samps)]
         return series_of_interest
 
@@ -145,14 +139,10 @@ class Query_DB:
         output_df1_list = []
         self.logger.info("Starting transcriptome search...")
         for i in tqdm(range(0, len(my_list), user_batch_size)):
-            try:
-                samps = my_list[i:i + user_batch_size]
-                df1 = self.transcriptome_enrichment.run_decouplr_on_memmaped_adata_with_samples(geneset, samps)
-                # Store the output from each iteration
-                output_df1_list.append(df1)
-            except Exception as e:
-                self.logger.error(f"Failure in batch {i}: {str(e)}")
-                self.logger.error(traceback.format_exc())
+            samps = my_list[i:i + user_batch_size]
+            df1 = self.transcriptome_enrichment.run_decouplr_on_memmaped_adata_with_samples(geneset, samps)
+            # Store the output from each iteration
+            output_df1_list.append(df1)
         final_df1 = pd.concat(output_df1_list)
         series_of_interest = self.get_top_samples(final_df1, n=nsamples)
         relevant_series = series_of_interest["series_id"]  # extract only studies (series)
@@ -193,6 +183,9 @@ class Query_DB:
         for i in tqdm(target_series):
             res_temp = self.transcriptome_embedding.get_closest_transcriptional_studies(i, k=k)
             series_list.append(res_temp)
+        series_list = [s for s in series_list if not s.empty]
+        if not series_list:
+            return pd.DataFrame(columns=["Index", "similarity_score", "gse_id", "gse_id_text"])
         additional_series = pd.concat(series_list)
         additional_series["gse_id_text"] = [self.rag_embedding.get_text_linked_to_gse(i) for i in additional_series["gse_id"]]
         return additional_series
@@ -214,8 +207,11 @@ class Query_DB:
         The number of closest semantic studies to retrieve can be specified using the k parameter.
         """
         self.logger.info("Performing semantic expansion...")
-        additional_series = pd.concat([self.rag_embedding.get_closest_semantic_studies(i, k=k) for i in series_of_interest])
-        return additional_series
+        frames = [self.rag_embedding.get_closest_semantic_studies(i, k=k) for i in series_of_interest]
+        frames = [f for f in frames if not f.empty]
+        if not frames:
+            return pd.DataFrame(columns=["Index", "similarity_score", "gse_id", "gse_id_text"])
+        return pd.concat(frames)
     
 
     def transcriptome_search_with_semantic_expansion(self, geneset_query, search=1000, expand=5):
@@ -345,6 +341,15 @@ class Query_DB:
         Returns:
             Results: An object containing the search results.
         """
+        for name, strategy in (("search", search), ("expand", expand)):
+            if strategy not in ("semantic", "transcriptome"):
+                raise ValueError(f"{name} must be 'semantic' or 'transcriptome', got {strategy!r}.")
+
+        if isinstance(geneset, str):
+            raise TypeError("geneset must be an iterable of gene names, not a string.")
+        if geneset is not None:
+            geneset = list(dict.fromkeys(geneset))
+
         if geneset is None and text_query is None:
             raise ValueError("At least one of geneset or text_query should not be None.")
         
@@ -421,26 +426,26 @@ class Query_DB:
         if perform_enrichment and self.RNASeqAnalysis is not None:
             if results_object.expansion_studies is not None:
                 self.logger.info("Performing enrichment on expansion studies.")
-                samps = self.metafile[self.metafile["series_id"].isin(results_object.expansion_studies["gse_id"])]
+                samps = self._samples_of_studies(results_object.expansion_studies)
                 enrichment_df = self.RNASeqAnalysis.perform_enrichment_on_samples_batched(samps.index, geneset)
-                res_df = pd.concat([enrichment_df, samps], axis = 1)
+                res_df = pd.concat([enrichment_df, samps.drop(columns="series_id")], axis = 1)
                 results_object.samples = res_df
                 self.logger.info("Completed enrichment on studies in expansion step.")
             else:
-                samps = self.metafile[self.metafile["series_id"].isin(results_object.seed_studies["gse_id"])]
+                samps = self._samples_of_studies(results_object.seed_studies)
                 self.logger.info("No expansion studies found. Performing enrichment on seed studies.")
                 enrichment_df = self.RNASeqAnalysis.perform_enrichment_on_samples_batched(samps.index, geneset)
-                res_df = pd.concat([enrichment_df, samps], axis = 1)
+                res_df = pd.concat([enrichment_df, samps.drop(columns="series_id")], axis = 1)
                 results_object.samples = res_df
                 self.logger.info("Completed enrichment on seed studies.")
         elif perform_enrichment is False and self.RNASeqAnalysis is not None:
             if results_object.expansion_studies is not None:
-                samps = self.metafile[self.metafile["series_id"].isin(results_object.expansion_studies["gse_id"])]
+                samps = self._samples_of_studies(results_object.expansion_studies)
                 res_df = self.retrieve_sample_metadata_from_h5(self.h5file, samps["samples"])
                 results_object.samples = res_df
                 self.logger.info("Retrieving samples from expansion step. Enrichment not performed.")
             else:
-                samps = self.metafile[self.metafile["series_id"].isin(results_object.seed_studies["gse_id"])]
+                samps = self._samples_of_studies(results_object.seed_studies)
                 res_df = self.retrieve_sample_metadata_from_h5(self.h5file, samps["samples"])
                 results_object.samples = res_df
                 self.logger.info("Retrieving samples from search step. Enrichment not performed.")
@@ -455,7 +460,7 @@ class Query_DB:
 
 class Results:
     """
-    Represents the results of a bioRAG analysis.
+    Represents the results of a SampleExplorer search.
 
     Attributes:
         seed_studies (DataFrame): The seed studies used in the analysis.

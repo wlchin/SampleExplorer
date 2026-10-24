@@ -1,6 +1,6 @@
 import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
-from sentence_transformers import SentenceTransformer
+from sample_explorer.similarity import cosine_similarity
+from sample_explorer.embedding import MiniLMEncoder
 import numpy as np
 import logging 
 import sys
@@ -8,18 +8,10 @@ import sys
 class Rag_embedding:
     def __init__(self, rag_index, rag_embedding_matrix):
         self.logger = logging.getLogger(__name__)
-        H = logging.StreamHandler(sys.stdout)
-        H.setLevel(logging.INFO)
-        H.setFormatter(
-            logging.Formatter(
-                fmt="[%(asctime)s] %(levelname)s: %(message)s",
-                datefmt="%d/%m/%Y ( %H:%M:%S )"
-            ))
-        self.logger.addHandler(H)
 
 
-        self.model = SentenceTransformer("paraphrase-MiniLM-L6-v2")
-        self.logger.info("Loaded SentenceTransformer model.")
+        self.model = MiniLMEncoder()
+        self.logger.info("Loaded MiniLM ONNX encoder.")
         self.rag_embedding_index = rag_index
         self.rag_embedding_matrix = rag_embedding_matrix
 
@@ -58,10 +50,13 @@ class Rag_embedding:
         Returns:
         - str: The text linked to the specified GSE ID.
         """
-        gse_id_text = self.rag_embedding_index[
+        texts = self.rag_embedding_index[
             self.rag_embedding_index["series_id"].isin([gse_id_query])
-        ]["rag_text"].to_list()[0]
-        return gse_id_text
+        ]["rag_text"].to_list()
+        if not texts:
+            self.logger.warning("Series %s not found in the semantic store.", gse_id_query)
+            return None
+        return texts[0]
 
     def get_closest_semantic_studies(self, query_gse_id, k=5):
         """
@@ -75,11 +70,12 @@ class Rag_embedding:
             pandas.DataFrame: A DataFrame containing the closest studies along with their similarity scores.
 
         """
-        relevant_embedding_indices = np.where(
+        flattened_array = np.flatnonzero(
             self.rag_embedding_index["series_id"].isin([query_gse_id])
         )
-        numpy_array = relevant_embedding_indices[0]
-        flattened_array = numpy_array.flatten()
+        if flattened_array.size == 0:
+            self.logger.warning("Series %s not found in the semantic store; skipping.", query_gse_id)
+            return pd.DataFrame(columns=["Index", "similarity_score", "gse_id", "gse_id_text"])
         query_embeddings = self.rag_embedding_matrix[flattened_array,]
 
         cosine_similarities = cosine_similarity(
@@ -87,9 +83,9 @@ class Rag_embedding:
         )
         average_cosine_similarities = np.mean(cosine_similarities, axis=1)
 
-        sorted_indices = np.argsort(average_cosine_similarities)[::-1]
+        sorted_indices = np.argsort(-average_cosine_similarities, kind="stable")
 
-        top_k = k
+        top_k = min(k, len(sorted_indices))
         results_data = []
 
         for i in range(top_k):
@@ -124,7 +120,7 @@ class Rag_embedding:
             self.rag_embedding_matrix, query_embedding
         )
         cosine_distances = 1 - cosine_similarities
-        sorted_indices = np.argsort(cosine_distances.flatten())
+        sorted_indices = np.argsort(cosine_distances.flatten(), kind="stable")
 
         if len(sorted_indices) < k:
             k = len(sorted_indices)
@@ -164,7 +160,7 @@ class Rag_embedding:
         query_embedding = query_embedding.reshape(1, -1)
         list_embeddings = list_embeddings.reshape(len(list_of_queries), -1)
 
-        # Calculate cosine similarity using scikit-learn
+        # Calculate cosine similarity
         cosine_scores = cosine_similarity(query_embedding, list_embeddings)
 
         # Calculate average similarity

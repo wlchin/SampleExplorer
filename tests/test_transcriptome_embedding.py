@@ -1,9 +1,9 @@
 
 from sample_explorer.transcriptome_embedding import Transcriptome_embedding
 import anndata as ad
+from tests.common import TRANSCRIPTOME_DB
 
-#x = ad.read_h5ad("tests/test_transcriptome_db.h5ad", backed = "r")
-x = ad.read_h5ad("tests/test_transcriptome_db.h5ad", backed = "r")
+x = ad.read_h5ad(TRANSCRIPTOME_DB, backed = "r")
 
 x1 = Transcriptome_embedding(x.obs, x.obsm["embedding"])
 
